@@ -1694,11 +1694,11 @@ body {
 }
 
 .nav .dropdown .dropdown-menu li a {
-  display: block;
-  padding: 10px 20px;
-  color: #333;
-  text-decoration: none;
+  font-size: 14px; /* Adjust font size */
+  padding: 8px 15px; /* Adjust padding to balance text size */
+  white-space: nowrap; /* Prevent text wrapping */
 }
+
 
 .nav .dropdown .dropdown-menu li a:hover {
   background-color: #f0f0f0;
@@ -1740,3 +1740,10 @@ iframe {
   border-radius: 10px;
   margin-top: 20px;
   }
+
+  button.btn {
+    font-size: 14px; /* Adjust the font size as needed */
+    padding: 8px 15px; /* Adjust padding to balance text and button size */
+    white-space: nowrap; /* Prevent text wrapping */
+  }
+  
