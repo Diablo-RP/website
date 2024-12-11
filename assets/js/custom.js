@@ -107,10 +107,10 @@
 
 })(window.jQuery);
 
-const clips = [
+const clips = [ 
   "https://clips.twitch.tv/embed?clip=NastyVastDragonfruitFUNgineer-TaAW5YtjIykhnG8e&parent=diablo-rp.github.io",
-  "https://clips.twitch.tv/embed?clip=AbrasiveRacySquidDogFace-yl3Kdww5Iu1s-rDr&parent=diablo-rp.github.io",
-  "https://clips.twitch.tv/embed?clip=AmazingBusySlothBabyRage-XyKyrhJwuTYk-Js9&parent=diablo-rp.github.io"
+  "https://clips.twitch.tv/embed?clip=YummyHelpfulSangChocolateRain-7SZrD1N9KQTEV39E&parent=diablo-rp.github.io",
+  "https://clips.twitch.tv/embed?clip=AbrasiveRacySquidDogFace-yl3Kdww5Iu1s-rDr&parent=diablo-rp.github.io"
 ];
 
 // Function to load a random clip
