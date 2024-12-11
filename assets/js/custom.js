@@ -107,19 +107,26 @@
 
 })(window.jQuery);
 
-const clips = [ 
+// Clips for Hammerrazor
+const clipsHammerrazor = [
   "https://clips.twitch.tv/embed?clip=NastyVastDragonfruitFUNgineer-TaAW5YtjIykhnG8e&parent=diablo-rp.github.io",
-  "https://clips.twitch.tv/embed?clip=YummyHelpfulSangChocolateRain-7SZrD1N9KQTEV39E&parent=diablo-rp.github.io",
   "https://clips.twitch.tv/embed?clip=AbrasiveRacySquidDogFace-yl3Kdww5Iu1s-rDr&parent=diablo-rp.github.io"
 ];
 
-// Function to load a random clip
-function loadRandomClip() {
-  const randomClip = clips[Math.floor(Math.random() * clips.length)];
-  document.getElementById('twitch-clip').src = randomClip;
-  document.getElementById('streamer-name').innerText = "Random Streamer";
-  document.getElementById('twitch-link').href = "https://www.twitch.tv"; // Update with actual Twitch URL
+// Clips for Dopeydyl
+const clipsDopeydyl = [
+  "https://clips.twitch.tv/embed?clip=YummyHelpfulSangChocolateRain-7SZrD1N9KQTEV39E&parent=diablo-rp.github.io",
+  "https://clips.twitch.tv/embed?clip=AmazingBusySlothBabyRage-XyKyrhJwuTYk-Js9&parent=diablo-rp.github.io"
+];
+
+// Function to load a random clip for a specific streamer
+function loadRandomClipForStreamer(clipArray, iframeId, streamerNameId, twitchLinkId, twitchUrl) {
+  const randomClip = clipArray[Math.floor(Math.random() * clipArray.length)];
+  document.getElementById(iframeId).src = randomClip;
+  document.getElementById(streamerNameId).innerText = twitchUrl.split('/').pop(); // Extracts the streamer name from the URL
+  document.getElementById(twitchLinkId).href = twitchUrl;
 }
 
-// Call the function to load a random clip
-loadRandomClip();
+// Load random clips for each streamer
+loadRandomClipForStreamer(clipsHammerrazor, 'twitch-clip-hammerrazor', 'streamer-name-hammerrazor', 'twitch-link-hammerrazor', 'https://www.twitch.tv/hammerrazor');
+loadRandomClipForStreamer(clipsDopeydyl, 'twitch-clip-dopeydyl', 'streamer-name-dopeydyl', 'twitch-link-dopeydyl', 'https://www.twitch.tv/dopeydyl');
