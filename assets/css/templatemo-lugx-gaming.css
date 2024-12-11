@@ -1671,3 +1671,68 @@ body {
 @media (max-width: 1200px) {
   
 }
+
+/* Dropdown menu styling */
+.nav .dropdown {
+  position: relative;
+}
+
+.nav .dropdown .dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #fff;
+  padding: 10px 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  z-index: 1000;
+}
+
+.nav .dropdown .dropdown-menu li {
+  list-style: none;
+}
+
+.nav .dropdown .dropdown-menu li a {
+  display: block;
+  padding: 10px 20px;
+  color: #333;
+  text-decoration: none;
+}
+
+.nav .dropdown .dropdown-menu li a:hover {
+  background-color: #f0f0f0;
+  color: #000;
+}
+
+/* Show dropdown on hover */
+.nav .dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+/* Show dropdown on click */
+ul {
+  list-style-type: disc; /* Default bullet style */
+  margin: 20px 0; /* Adds vertical spacing before and after the list */
+  padding-left: 40px; /* Adds indentation */
+}
+
+ul li {
+  margin-bottom: 10px; /* Adds spacing between each list item */
+  line-height: 1.6; /* Improves readability with line height */
+}
+
+ul ul {
+  list-style-type: circle; /* Change nested list bullet style */
+  margin: 10px 0; /* Adds spacing between nested lists */
+  padding-left: 20px; /* Further indents nested lists */
+}
+
+ul ul li {
+  margin-bottom: 8px; /* Adjust spacing between nested list items */
+}
+
+ul strong {
+  color: #333; /* Optional: Makes the bolded terms more distinct */
+}
+
