@@ -3,18 +3,18 @@ const parent = window.location.hostname;
 // Predefined list of Medal embed URLs
 const clipMedalUrls = [
     "https://medal.tv/clip/iVfqWIgU567i5GKs6/vpzrTsQ2w?invite=cr-MSxzM2gsNTI4OTgwNDIs",
-    "https://medal.tv/clip/iVgjfcTGZTUEEimxW/vpeQp7qzP?invite=cr-MSw4TGssLA",
-    "https://medal.tv/clip/iYz0ehISk0BCtDKMG/vp3TRTaBe?invite=cr-MSw3dnMsLA",
-    "https://medal.tv/clip/iNnjHmqMRCXpVDZj5/vp7XrpsVT?invite=cr-MSxsUFEsLA",
-    "https://medal.tv/clip/iHiZL3ej1XC8eQAgJ/vptFhd5gM?invite=cr-MSxBMjAsLA",
-    "https://medal.tv/clip/iFflk2iSCg0qXEmJI/vpExNmUdM?invite=cr-MSxoTlYsLA",
-    "https://medal.tv/clip/iBLUT2NwcMoVwetQX/vpSkz5S8O?invite=cr-MSw2UTQsLA",
-    "https://medal.tv/clip/isSkKyOW1LqaAARVw/vpz08YfEg?invite=cr-MSxwZ1UsLA",
+    // "https://medal.tv/clip/iVgjfcTGZTUEEimxW/vpeQp7qzP?invite=cr-MSw4TGssLA",
+    // "https://medal.tv/clip/iYz0ehISk0BCtDKMG/vp3TRTaBe?invite=cr-MSw3dnMsLA",
+    // "https://medal.tv/clip/iNnjHmqMRCXpVDZj5/vp7XrpsVT?invite=cr-MSxsUFEsLA",
+    // "https://medal.tv/clip/iHiZL3ej1XC8eQAgJ/vptFhd5gM?invite=cr-MSxBMjAsLA",
+    // "https://medal.tv/clip/iFflk2iSCg0qXEmJI/vpExNmUdM?invite=cr-MSxoTlYsLA",
+    // "https://medal.tv/clip/iBLUT2NwcMoVwetQX/vpSkz5S8O?invite=cr-MSw2UTQsLA",
+    // "https://medal.tv/clip/isSkKyOW1LqaAARVw/vpz08YfEg?invite=cr-MSxwZ1UsLA",
 ];
 
 // Predefined list of Twitch embed URLs
 const clipTwitchUrls = [
-    `https://clips.twitch.tv/embed?clip=PiliableVainPeppermintOpieOP-jZRjNjoWJ2cZgLbM&parent=$www.diablo-rp.com/&autoplay=true`,
+    `https://clips.twitch.tv/embed?clip=PiliableVainPeppermintOpieOP-jZRjNjoWJ2cZgLbM&parent=www.diablo-rp.com/&autoplay=true`,
     `https://clips.twitch.tv/embed?clip=PluckyFitOcelotAMPEnergy-Vu3dTfdcJU8xr2ET&parent=www.diablo-rp.com&autoplay=true`
 ];
 
