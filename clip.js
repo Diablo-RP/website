@@ -14,8 +14,8 @@ const clipMedalUrls = [
 
 // Predefined list of Twitch embed URLs
 const clipTwitchUrls = [
-    `https://clips.twitch.tv/embed?clip=PiliableVainPeppermintOpieOP-jZRjNjoWJ2cZgLbM&parent=www.diablo-rp.com/&autoplay=true`,
-    `https://clips.twitch.tv/embed?clip=PluckyFitOcelotAMPEnergy-Vu3dTfdcJU8xr2ET&parent=www.diablo-rp.com&autoplay=true`
+    `https://clips.twitch.tv/embed?clip=PiliableVainPeppermintOpieOP-jZRjNjoWJ2cZgLbM&parent=https://diablo-rp.com/clip.html&autoplay=true`,
+    `https://clips.twitch.tv/embed?clip=PluckyFitOcelotAMPEnergy-Vu3dTfdcJU8xr2ET&parent=https://diablo-rp.com/clip.html&autoplay=true`
 ];
 
 const videoPlayer = document.getElementById('videoPlayer');
