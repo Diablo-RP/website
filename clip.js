@@ -17,16 +17,20 @@ function playClip() {
 
     if (url.includes('medal.tv')) {
         // Embed Medal clip directly
-        videoPlayer.innerHTML = `
-            <iframe 
-                width="100%" 
-                height="100%" 
-                style="border: none;" 
-                src="${url}" 
-                allow="autoplay" 
-                allowfullscreen>
-            </iframe>
-        `;
+        const iframe = document.createElement('iframe');
+        iframe.src = `${url}&autoplay=true`;
+        iframe.width = "100%";
+        iframe.height = "100%";
+        iframe.style.border = "none";
+        iframe.allow = "autoplay";
+        iframe.allowFullscreen = true;
+
+        // Simulate interaction by focusing the iframe after loading
+        iframe.onload = () => {
+            iframe.contentWindow.focus();
+        };
+
+        videoPlayer.appendChild(iframe);
     } else {
         console.error(`Unsupported URL format: ${url}`);
     }
