@@ -10,7 +10,14 @@ const clipMedalUrls = [
     "https://medal.tv/clip/iFflk2iSCg0qXEmJI/vpExNmUdM?invite=cr-MSxoTlYsLA",
     "https://medal.tv/clip/iBLUT2NwcMoVwetQX/vpSkz5S8O?invite=cr-MSw2UTQsLA",
     "https://medal.tv/clip/isSkKyOW1LqaAARVw/vpz08YfEg?invite=cr-MSxwZ1UsLA",
+    "https://medal.tv/clip/ioPB8rawdx9lOy6hu/vpNuSthpg?invite=cr-MSx1MnYsLA",
+    "https://medal.tv/clip/ioOHEu9Ga14Ztce6K/vpdvsaKHJ?invite=cr-MSxYNVUsLA",
+    "https://medal.tv/clip/im9hH13KLFcrnZ47t/vppAIGngQ?invite=cr-MSxWY2ksLA",
+
+
 ];
+
+
 
 // Predefined list of Twitch embed URLs
 const clipTwitchUrls = [
@@ -73,7 +80,7 @@ function playClip() {
     }
 
     // Schedule the next random clip
-    setTimeout(playClip, 15000); // Play each clip for 15 seconds
+    setTimeout(playClip, 30000); // Play each clip for 15 seconds
 }
 
 // Start autoplaying random clips when the page loads
