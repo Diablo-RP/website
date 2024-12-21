@@ -157,6 +157,31 @@ body {
   font-weight: 700;
 }
 
+.section-heading-app {
+  margin-bottom: 30px;
+}
+
+.section-heading-app h2 {
+  font-size: 36px;
+  font-weight: 700;
+  text-transform: capitalize;
+  margin-top: 20px;
+  line-height: 44px;
+}
+
+.section-heading-app h2 em {
+  font-style: normal;
+  color: #a7ab35;
+}
+
+.section-heading-app h6 {
+  color: #aea235;
+  font-size: 15px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+
 .main-button a {
   display: inline-block;
   background-color: #282725;
