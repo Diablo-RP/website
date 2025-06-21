@@ -136,17 +136,22 @@ app.post('/api/login', async (req, res) => {
 // Get player info
 app.get('/api/player-info', async (req, res) => {
   try {
-    // Check cas_vip_coin table structure
-    const [vipColumns] = await db.promise().query('DESCRIBE cas_vip_coin');
-    console.log('VIP Coins table structure:', vipColumns);
+    // Check if cas_vip_coin table exists
+    const [tables] = await db.promise().query('SHOW TABLES LIKE "cas_vip_coin"');
+    console.log('Tables:', tables);
+
+    // Get table structure
+    const [columns] = await db.promise().query('DESCRIBE cas_vip_coin');
+    console.log('VIP Coins table structure:', columns);
 
     // First get player info with VIP coins
-    const [players] = await db.promise().query(
-      'SELECT p.citizenid, p.money, p.charinfo, COALESCE(v.amount, 0) as vip_coins ' +
-      'FROM players p ' +
-      'LEFT JOIN cas_vip_coin v ON v.identifier = p.citizenid ' + // Use identifier instead of steam
-      'LIMIT 1'
-    );
+    const query = 'SELECT p.citizenid, p.money, p.charinfo, COALESCE(v.amount, 0) as vip_coins ' +
+                 'FROM players p ' +
+                 'LEFT JOIN cas_vip_coin v ON v.identifier = p.citizenid ' +
+                 'LIMIT 1';
+    console.log('Executing query:', query);
+    
+    const [players] = await db.promise().query(query);
     console.log('Query result:', players);
     
     if (players.length === 0) {
