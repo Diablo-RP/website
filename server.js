@@ -502,29 +502,17 @@ app.get('/api/player-info', authenticateUser, async (req, res) => {
   try {
     console.log('Player info request received');
     console.log('Character ID:', req.headers['character-id']);
-    
-    // First get the citizenid from users table
-    const [users] = await db.promise().query(
-      'SELECT character_id FROM users WHERE character_id = ?',
-      [req.headers['character-id']]
-    );
-    console.log('Found user:', users[0]);
 
-    if (users.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    // Get player info from the players table
+    // Get player info directly from players table
     const query = `
       SELECT p.citizenid, p.money, p.charinfo, COALESCE(v.amount, 0) as vip_coins 
       FROM players p 
       LEFT JOIN cas_vip_coin v ON v.identifier = p.citizenid 
-      WHERE p.citizenid = ?`;
+      LIMIT 1`;
     
     console.log('Executing query:', query);
-    console.log('With params:', [users[0].character_id]);
     
-    const [players] = await db.promise().query(query, [users[0].character_id]);
+    const [players] = await db.promise().query(query);
     console.log('Query result:', players);
 
     if (players.length === 0) {
