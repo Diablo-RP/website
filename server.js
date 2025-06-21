@@ -431,68 +431,37 @@ app.post('/api/login', async (req, res) => {
 });
 
 // Player info endpoint
-app.get('/api/player-info', async (req, res) => {
+app.get('/api/player-info', authenticateUser, async (req, res) => {
   try {
-    const [characters] = await db.promise().query(
-      `SELECT c.*, u.character_id 
-       FROM characters c 
-       JOIN users u ON c.user_id = u.id 
-       WHERE u.character_id = ?`,
+    // Get player info from the players table
+    const [players] = await db.promise().query(
+      'SELECT citizenid, money, charinfo, COALESCE(v.amount, 0) as vip_coins ' +
+      'FROM players p ' +
+      'LEFT JOIN cas_vip_coin v ON v.identifier = p.citizenid ' +
+      'WHERE p.citizenid = ?',
       [req.headers['character-id']]
     );
 
-    if (characters.length === 0) {
-      // If no character found, create a new one
-      const [user] = await db.promise().query(
-        'SELECT id FROM users WHERE character_id = ?',
-        [req.headers['character-id']]
-      );
-
-      if (user.length === 0) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-
-      const [result] = await db.promise().query(
-        `INSERT INTO characters (user_id, first_name, last_name, citizen_id) 
-         VALUES (?, 'New', 'Character', ?)`,
-        [user[0].id, `CIT${Math.floor(Math.random() * 100000)}`]
-      );
-
-      const [newCharacter] = await db.promise().query(
-        'SELECT * FROM characters WHERE id = ?',
-        [result.insertId]
-      );
-
-      return res.json({
-        id: newCharacter[0].id,
-        firstName: newCharacter[0].first_name,
-        lastName: newCharacter[0].last_name,
-        citizenId: newCharacter[0].citizen_id,
-        cash: newCharacter[0].cash,
-        valBank: newCharacter[0].val_bank,
-        armBank: newCharacter[0].arm_bank,
-        rhoBank: newCharacter[0].rho_bank,
-        blkBank: newCharacter[0].blk_bank,
-        bank: newCharacter[0].bank,
-        bloodMoney: newCharacter[0].blood_money,
-        vipCoins: newCharacter[0].vip_coins
-      });
+    if (players.length === 0) {
+      return res.status(404).json({ error: 'Player not found' });
     }
 
-    // Return existing character
+    const player = players[0];
+    const moneyData = JSON.parse(player.money);
+    const charInfo = JSON.parse(player.charinfo);
+
     res.json({
-      id: characters[0].id,
-      firstName: characters[0].first_name,
-      lastName: characters[0].last_name,
-      citizenId: characters[0].citizen_id,
-      cash: characters[0].cash,
-      valBank: characters[0].val_bank,
-      armBank: characters[0].arm_bank,
-      rhoBank: characters[0].rho_bank,
-      blkBank: characters[0].blk_bank,
-      bank: characters[0].bank,
-      bloodMoney: characters[0].blood_money,
-      vipCoins: characters[0].vip_coins
+      citizenId: player.citizenid,
+      firstName: charInfo.firstname,
+      lastName: charInfo.lastname,
+      vipCoins: parseInt(player.vip_coins) || 0,
+      cash: parseFloat(moneyData.cash) || 0,
+      valBank: parseFloat(moneyData.valbank) || 0,
+      armBank: parseFloat(moneyData.armbank) || 0,
+      rhoBank: parseFloat(moneyData.rhobank) || 0,
+      blkBank: parseFloat(moneyData.blkbank) || 0,
+      bank: parseFloat(moneyData.bank) || 0,
+      bloodMoney: parseFloat(moneyData.bloodmoney) || 0
     });
   } catch (error) {
     console.error('Error fetching player info:', error);
