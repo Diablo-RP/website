@@ -22,6 +22,73 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+// Authentication middleware
+const authenticateUser = async (req, res, next) => {
+  const characterId = req.headers['character-id'];
+  if (!characterId) {
+    return res.status(401).json({ error: 'No character ID provided' });
+  }
+
+  try {
+    const [users] = await db.promise().query(
+      'SELECT * FROM users WHERE character_id = ?',
+      [characterId]
+    );
+
+    if (users.length === 0) {
+      return res.status(401).json({ error: 'Invalid character ID' });
+    }
+
+    req.user = users[0];
+    next();
+  } catch (error) {
+    console.error('Authentication error:', error);
+    res.status(500).json({ error: 'Error during authentication' });
+  }
+};
+
+// Admin authentication middleware
+const authenticateAdmin = async (req, res, next) => {
+  const characterId = req.headers['character-id'];
+  if (!characterId) {
+    return res.status(401).json({ error: 'No character ID provided' });
+  }
+
+  try {
+    const [users] = await db.promise().query(
+      'SELECT * FROM users WHERE character_id = ? AND is_admin = true',
+      [characterId]
+    );
+
+    if (users.length === 0) {
+      return res.status(403).json({ error: 'Unauthorized: Admin access required' });
+    }
+
+    req.user = users[0];
+    next();
+  } catch (error) {
+    console.error('Admin authentication error:', error);
+    res.status(500).json({ error: 'Error during authentication' });
+  }
+};
+
+// Helper function to send email notifications
+const sendTicketEmail = async (userEmail, subject, message) => {
+  if (!userEmail) return;
+  
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: userEmail,
+      subject: subject,
+      text: message
+    });
+    console.log('Email sent successfully');
+  } catch (error) {
+    console.error('Error sending email:', error);
+  }
+};
+
 // Database configuration
 const dbConfig = {
   host: 'localhost',
@@ -468,74 +535,6 @@ app.get('/api/player-info', authenticateUser, async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch player info' });
   }
 });
-
-// Authentication middleware
-const authenticateUser = async (req, res, next) => {
-  const characterId = req.headers['character-id'];
-  
-  if (!characterId) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
-
-  try {
-    const [users] = await db.promise().query(
-      'SELECT * FROM users WHERE character_id = ?',
-      [characterId]
-    );
-
-    if (users.length === 0) {
-      return res.status(401).json({ error: 'Invalid authentication' });
-    }
-
-    req.user = users[0]; // Attach user object to request
-    next();
-  } catch (error) {
-    console.error('Authentication error:', error);
-    res.status(500).json({ error: 'Authentication failed' });
-  }
-};
-
-// Admin authentication middleware
-const authenticateAdmin = async (req, res, next) => {
-  const characterId = req.headers['character-id'];
-  
-  if (!characterId) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
-
-  try {
-    const [users] = await db.promise().query(
-      'SELECT * FROM users WHERE character_id = ? AND is_admin = TRUE',
-      [characterId]
-    );
-
-    if (users.length === 0) {
-      return res.status(401).json({ error: 'Admin access required' });
-    }
-
-    req.user = users[0];
-    next();
-  } catch (error) {
-    console.error('Authentication error:', error);
-    res.status(500).json({ error: 'Authentication failed' });
-  }
-};
-
-// Helper function to send email notifications
-async function sendTicketEmail(userEmail, subject, message) {
-  if (!userEmail || !process.env.SMTP_USER) return;
-
-  try {
-    await transporter.sendMail({
-      from: process.env.SMTP_USER,
-      to: userEmail,
-      subject: `[Diablo County RP] ${subject}`,
-      html: message
-    });
-  } catch (error) {
-    console.error('Error sending email:', error);
-  }
-}
 
 // Ticket endpoints
 app.post('/api/tickets', authenticateUser, async (req, res) => {
