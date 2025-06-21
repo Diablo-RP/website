@@ -144,11 +144,11 @@ app.get('/api/player-info', async (req, res) => {
     const [columns] = await db.promise().query('DESCRIBE cas_vip_coin');
     console.log('VIP Coins table structure:', columns);
 
-    // Get all characters for the player's license
+    // First get player info with VIP coins
     const query = 'SELECT p.citizenid, p.money, p.charinfo, p.license, COALESCE(v.amount, 0) as vip_coins ' +
                  'FROM players p ' +
                  'LEFT JOIN cas_vip_coin v ON v.identifier = p.license ' +
-                 'WHERE p.license = (SELECT license FROM players LIMIT 1)'; // Get all chars with same license
+                 'WHERE p.license = (SELECT license FROM players WHERE license IS NOT NULL LIMIT 1)'; // Get all chars with same license
     console.log('Executing query:', query);
     
     const [players] = await db.promise().query(query);
@@ -160,14 +160,14 @@ app.get('/api/player-info', async (req, res) => {
     
     // Map all characters to response format
     const characters = players.map(player => {
-      const moneyData = JSON.parse(player.money);
-      const charInfo = JSON.parse(player.charinfo);
+      const moneyData = JSON.parse(player.money || '{}');
+      const charInfo = JSON.parse(player.charinfo || '{}');
       console.log('Character Info:', charInfo);
       
       return {
         citizenId: player.citizenid,
-        firstName: charInfo.firstname,
-        lastName: charInfo.lastname,
+        firstName: charInfo.firstname || '',
+        lastName: charInfo.lastname || '',
         vipCoins: parseInt(player.vip_coins) || 0,
         cash: parseFloat(moneyData.cash) || 0,
         valBank: parseFloat(moneyData.valbank) || 0,
