@@ -212,14 +212,10 @@
 
           if (response.ok) {
             const data = await response.json();
-            console.log('Player data:', data); // Add this to see what we receive
+            console.log('Player data:', data);
             
-            // Update player name - try different combinations
-            let displayName = data.fullName; // Try fullname first
-            if (!displayName) {
-                // Try combining first and last name
-                displayName = `${data.firstName} ${data.lastName}`.trim();
-            }
+            // Update player name
+            const displayName = data.firstName + (data.lastName ? ` ${data.lastName}` : '');
             document.getElementById('playerName').textContent = displayName || 'Unknown';
             
             // Update other fields
