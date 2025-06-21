@@ -48,6 +48,29 @@ db.connect((err) => {
       console.error('Error creating users table:', err);
     } else {
       console.log('Users table ready');
+      
+      // Create tickets table if it doesn't exist
+      const createTicketsTable = `
+        CREATE TABLE IF NOT EXISTS tickets (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          user_id INT NOT NULL,
+          subject VARCHAR(255) NOT NULL,
+          category VARCHAR(50) NOT NULL,
+          description TEXT NOT NULL,
+          status ENUM('open', 'in_progress', 'closed') DEFAULT 'open',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+      `;
+      
+      db.query(createTicketsTable, (err) => {
+        if (err) {
+          console.error('Error creating tickets table:', err);
+        } else {
+          console.log('Tickets table ready');
+        }
+      });
     }
   });
 });
@@ -182,6 +205,84 @@ app.get('/api/player-info', async (req, res) => {
       error: 'Error fetching player information',
       details: error.message
     });
+  }
+});
+
+// Ticket endpoints
+app.post('/api/tickets', async (req, res) => {
+  try {
+    const { subject, category, description } = req.body;
+    const userId = req.headers['user-id']; // You should implement proper authentication
+
+    if (!userId || !subject || !category || !description) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const [result] = await db.promise().query(
+      'INSERT INTO tickets (user_id, subject, category, description) VALUES (?, ?, ?, ?)',
+      [userId, subject, category, description]
+    );
+
+    res.json({
+      success: true,
+      ticketId: result.insertId,
+      message: 'Ticket created successfully'
+    });
+  } catch (error) {
+    console.error('Error creating ticket:', error);
+    res.status(500).json({ error: 'Failed to create ticket' });
+  }
+});
+
+app.get('/api/tickets', async (req, res) => {
+  try {
+    const userId = req.headers['user-id']; // You should implement proper authentication
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const [tickets] = await db.promise().query(
+      `SELECT id, subject, category, description, status, created_at, updated_at 
+       FROM tickets 
+       WHERE user_id = ? 
+       ORDER BY created_at DESC`,
+      [userId]
+    );
+
+    res.json({ tickets });
+  } catch (error) {
+    console.error('Error fetching tickets:', error);
+    res.status(500).json({ error: 'Failed to fetch tickets' });
+  }
+});
+
+app.patch('/api/tickets/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const userId = req.headers['user-id']; // You should implement proper authentication
+
+    if (!userId || !status) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const [result] = await db.promise().query(
+      'UPDATE tickets SET status = ? WHERE id = ? AND user_id = ?',
+      [status, id, userId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Ticket not found or unauthorized' });
+    }
+
+    res.json({
+      success: true,
+      message: 'Ticket status updated successfully'
+    });
+  } catch (error) {
+    console.error('Error updating ticket:', error);
+    res.status(500).json({ error: 'Failed to update ticket' });
   }
 });
 

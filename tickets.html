@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Diablo County RP - Support Tickets</title>
+    <link rel="icon" type="image/x-icon" href="assets/images/logo.png">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Stint+Ultra+Condensed&display=swap" rel="stylesheet">
+    <!-- Bootstrap core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Additional CSS Files -->
+    <link rel="stylesheet" href="assets/css/fontawesome.css">
+    <link rel="stylesheet" href="assets/css/diablo.css">
+    <style>
+      body {
+        font-family: 'Stint Ultra Condensed', cursive;
+        font-size: 1.2em;
+      }
+      .tickets-title {
+        font-family: 'Stint Ultra Condensed', cursive;
+        color: #8b0000;
+        font-size: 3.5em;
+        text-transform: uppercase;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        margin-bottom: 30px;
+        text-align: center;
+        letter-spacing: 2px;
+      }
+      .ticket-form {
+        background: rgba(0,0,0,0.7);
+        padding: 30px;
+        border-radius: 15px;
+        margin-top: 20px;
+      }
+      .ticket-list {
+        background: rgba(0,0,0,0.7);
+        padding: 30px;
+        border-radius: 15px;
+        margin-top: 20px;
+      }
+      .ticket-item {
+        border-bottom: 1px solid #8b0000;
+        padding: 15px 0;
+      }
+      .ticket-status {
+        color: #ffd700;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ***** Header Area Start ***** -->
+    <header class="header-area header-sticky">
+      <div class="container">
+        <div class="row">
+          <div class="col-12">
+            <nav class="main-nav">
+              <a href="index.html" class="logo">
+                <img src="assets/images/logo.png" alt="Diablo County RP">
+              </a>
+              <ul class="nav">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="rules.html">Rules</a></li>
+                <li><a href="player-dashboard.html">Dashboard</a></li>
+                <li><a href="tickets.html" class="active">Tickets</a></li>
+                <li><a href="signin.html">Sign In</a></li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="container mt-5 pt-5">
+      <h1 class="tickets-title">Support Tickets</h1>
+      
+      <!-- New Ticket Form -->
+      <div class="ticket-form">
+        <h2 class="text-white mb-4">Create New Ticket</h2>
+        <form id="ticketForm">
+          <div class="form-group mb-3">
+            <label for="subject" class="text-white">Subject</label>
+            <input type="text" class="form-control" id="subject" required>
+          </div>
+          <div class="form-group mb-3">
+            <label for="category" class="text-white">Category</label>
+            <select class="form-control" id="category" required>
+              <option value="">Select a category</option>
+              <option value="technical">Technical Issue</option>
+              <option value="gameplay">Gameplay Issue</option>
+              <option value="player">Player Report</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group mb-3">
+            <label for="description" class="text-white">Description</label>
+            <textarea class="form-control" id="description" rows="5" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Submit Ticket</button>
+        </form>
+      </div>
+
+      <!-- Ticket List -->
+      <div class="ticket-list mt-5">
+        <h2 class="text-white mb-4">Your Tickets</h2>
+        <div id="ticketsList">
+          <!-- Tickets will be loaded here dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script>
+      $(document).ready(function() {
+        // Handle ticket submission
+        $('#ticketForm').on('submit', function(e) {
+          e.preventDefault();
+          
+          const ticketData = {
+            subject: $('#subject').val(),
+            category: $('#category').val(),
+            description: $('#description').val()
+          };
+
+          $.ajax({
+            url: '/api/tickets',
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'user-id': localStorage.getItem('userId') // You should implement proper authentication
+            },
+            data: JSON.stringify(ticketData),
+            success: function(response) {
+              alert('Ticket created successfully!');
+              $('#ticketForm')[0].reset();
+              loadTickets(); // Refresh the tickets list
+            },
+            error: function(xhr) {
+              alert('Error creating ticket: ' + (xhr.responseJSON?.error || 'Unknown error'));
+            }
+          });
+        });
+
+        // Load tickets
+        function loadTickets() {
+          $.ajax({
+            url: '/api/tickets',
+            method: 'GET',
+            headers: {
+              'user-id': localStorage.getItem('userId') // You should implement proper authentication
+            },
+            success: function(response) {
+              const ticketsList = $('#ticketsList');
+              ticketsList.empty();
+
+              if (response.tickets.length === 0) {
+                ticketsList.html('<p class="text-white">No tickets found.</p>');
+                return;
+              }
+
+              response.tickets.forEach(ticket => {
+                const statusClass = {
+                  'open': 'text-warning',
+                  'in_progress': 'text-info',
+                  'closed': 'text-success'
+                }[ticket.status];
+
+                const ticketHtml = `
+                  <div class="ticket-item">
+                    <h3 class="text-white">${ticket.subject}</h3>
+                    <p class="text-white-50">Category: ${ticket.category}</p>
+                    <p class="text-white-50">${ticket.description}</p>
+                    <p>
+                      <span class="ticket-status ${statusClass}">Status: ${ticket.status}</span>
+                      <small class="text-white-50 ml-3">Created: ${new Date(ticket.created_at).toLocaleString()}</small>
+                    </p>
+                    ${ticket.status !== 'closed' ? `
+                      <button class="btn btn-sm btn-danger close-ticket" data-ticket-id="${ticket.id}">
+                        Close Ticket
+                      </button>
+                    ` : ''}
+                  </div>
+                `;
+                ticketsList.append(ticketHtml);
+              });
+            },
+            error: function(xhr) {
+              alert('Error loading tickets: ' + (xhr.responseJSON?.error || 'Unknown error'));
+            }
+          });
+        }
+
+        // Handle ticket closure
+        $(document).on('click', '.close-ticket', function() {
+          const ticketId = $(this).data('ticket-id');
+          
+          $.ajax({
+            url: `/api/tickets/${ticketId}`,
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'user-id': localStorage.getItem('userId') // You should implement proper authentication
+            },
+            data: JSON.stringify({ status: 'closed' }),
+            success: function() {
+              loadTickets(); // Refresh the tickets list
+            },
+            error: function(xhr) {
+              alert('Error closing ticket: ' + (xhr.responseJSON?.error || 'Unknown error'));
+            }
+          });
+        });
+
+        // Initial load
+        loadTickets();
+      });
+    </script>
+  </body>
+</html>
