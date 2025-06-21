@@ -206,56 +206,52 @@
       $(document).ready(function() {
         // Fetch player info
         $.get('/api/player-info')
-          .done(function(characters) {
+          .done(function(character) {
             const container = $('#characters-container');
             
-            characters.forEach(character => {
-              const characterDiv = $('<div>').addClass('character-card mb-4 p-4 border rounded');
-              
-              // Character name section
-              characterDiv.append(`
-                <h3 class="mb-3">${character.firstName} ${character.lastName || ''}</h3>
-                <p class="text-muted">Citizen ID: ${character.citizenId}</p>
-              `);
+            const characterDiv = $('<div>').addClass('character-card mb-4 p-4 border rounded');
+            
+            // Character name section
+            characterDiv.append(`
+              <h3 class="mb-3">${character.firstName} ${character.lastName || ''}</h3>
+              <p class="text-muted">Citizen ID: ${character.citizenId}</p>
+            `);
 
-              // Money grid
-              const moneyGrid = $('<div>').addClass('row g-3 mb-4');
-              
-              // Add money boxes
-              const moneyBoxes = [
-                { label: 'Cash', value: character.cash },
-                { label: 'Valentine Bank', value: character.valBank },
-                { label: 'Armadillo Bank', value: character.armBank },
-                { label: 'Rhodes Bank', value: character.rhoBank },
-                { label: 'Blackwater Bank', value: character.blkBank },
-                { label: 'Bank', value: character.bank },
-                { label: 'Blood Money', value: character.bloodMoney }
-              ];
+            // Money grid
+            const moneyGrid = $('<div>').addClass('row g-3 mb-4');
+            
+            // Add money boxes
+            const moneyBoxes = [
+              { label: 'Cash', value: character.cash },
+              { label: 'Valentine Bank', value: character.valBank },
+              { label: 'Armadillo Bank', value: character.armBank },
+              { label: 'Rhodes Bank', value: character.rhoBank },
+              { label: 'Blackwater Bank', value: character.blkBank },
+              { label: 'Bank', value: character.bank },
+              { label: 'Blood Money', value: character.bloodMoney }
+            ];
 
-              moneyBoxes.forEach(box => {
-                moneyGrid.append(`
-                  <div class="col-md-4 col-lg-3">
-                    <div class="p-3 border rounded text-center">
-                      <h5>${box.label}</h5>
-                      <p class="mb-0">$${box.value.toFixed(2)}</p>
-                    </div>
+            moneyBoxes.forEach(box => {
+              moneyGrid.append(`
+                <div class="col-md-4 col-lg-3">
+                  <div class="p-3 border rounded text-center">
+                    <h5>${box.label}</h5>
+                    <p class="mb-0">$${box.value.toFixed(2)}</p>
                   </div>
-                `);
-              });
-
-              characterDiv.append(moneyGrid);
-              container.append(characterDiv);
-            });
-
-            // Add VIP coins display (same for all characters since it's per license)
-            if (characters.length > 0) {
-              $('body').append(`
-                <div class="vip-coins-display">
-                  <i class="fas fa-crown"></i>
-                  <span>${characters[0].vipCoins}</span>
                 </div>
               `);
-            }
+            });
+
+            characterDiv.append(moneyGrid);
+            container.append(characterDiv);
+
+            // Add VIP coins display
+            $('body').append(`
+              <div class="vip-coins-display">
+                <i class="fas fa-crown"></i>
+                <span>${character.vipCoins}</span>
+              </div>
+            `);
           })
           .fail(function(jqXHR, textStatus, errorThrown) {
             console.error('Error fetching player info:', errorThrown);

@@ -136,21 +136,22 @@ app.post('/api/login', async (req, res) => {
 // Get player info
 app.get('/api/player-info', async (req, res) => {
   try {
-    // First check if we can query the database
-    const [tables] = await db.promise().query('SHOW TABLES LIKE "players"');
-    if (tables.length === 0) {
-      console.error('Players table not found');
-      return res.status(500).json({ error: 'Players table not found in database' });
-    }
+    // Check if cas_vip_coin table exists
+    const [tables] = await db.promise().query('SHOW TABLES LIKE "cas_vip_coin"');
+    console.log('Tables:', tables);
 
-    // Get the table structure
-    const [columns] = await db.promise().query('DESCRIBE players');
-    console.log('Players table structure:', columns);
+    // Get table structure
+    const [columns] = await db.promise().query('DESCRIBE cas_vip_coin');
+    console.log('VIP Coins table structure:', columns);
 
-    // Get user info from players table with money and charinfo columns
-    const [players] = await db.promise().query(
-      'SELECT citizenid, money, charinfo FROM players LIMIT 1'
-    );
+    // First get player info with VIP coins
+    const query = 'SELECT p.citizenid, p.money, p.charinfo, p.license, COALESCE(v.amount, 0) as vip_coins ' +
+                 'FROM players p ' +
+                 'LEFT JOIN cas_vip_coin v ON v.identifier = p.license ' +
+                 'LIMIT 1';
+    console.log('Executing query:', query);
+    
+    const [players] = await db.promise().query(query);
     console.log('Query result:', players);
     
     if (players.length === 0) {
@@ -160,14 +161,13 @@ app.get('/api/player-info', async (req, res) => {
     const player = players[0];
     const moneyData = JSON.parse(player.money);
     const charInfo = JSON.parse(player.charinfo);
-    console.log('Character Info:', charInfo); // Debug log
-    console.log('Raw charinfo:', player.charinfo); // Debug raw string
+    console.log('Character Info:', charInfo);
     
     res.json({
       citizenId: player.citizenid,
-      firstName: charInfo.firstname || charInfo.firstName || '',
-      lastName: charInfo.lastname || charInfo.lastName || '',
-      fullName: charInfo.fullname || charInfo.name || '',
+      firstName: charInfo.firstname,
+      lastName: charInfo.lastname,
+      vipCoins: parseInt(player.vip_coins) || 0,
       cash: parseFloat(moneyData.cash) || 0,
       valBank: parseFloat(moneyData.valbank) || 0,
       armBank: parseFloat(moneyData.armbank) || 0,
