@@ -140,31 +140,46 @@ app.get('/api/player-info', async (req, res) => {
     const [tables] = await db.promise().query('SHOW TABLES LIKE "cas_vip_coin"');
     console.log('Tables:', tables);
 
-    // Get table structure
-    const [columns] = await db.promise().query('DESCRIBE cas_vip_coin');
-    console.log('VIP Coins table structure:', columns);
+    // Get a valid license first
+    const [licenses] = await db.promise().query('SELECT DISTINCT license FROM players WHERE license IS NOT NULL LIMIT 1');
+    console.log('Found license:', licenses);
 
-    // First get player info with VIP coins
+    if (licenses.length === 0) {
+      console.log('No valid license found');
+      return res.status(404).json({ error: 'No valid license found' });
+    }
+
+    const license = licenses[0].license;
+    console.log('Using license:', license);
+
+    // Get all characters for this license
     const query = 'SELECT p.citizenid, p.money, p.charinfo, p.license, COALESCE(v.amount, 0) as vip_coins ' +
                  'FROM players p ' +
                  'LEFT JOIN cas_vip_coin v ON v.identifier = p.license ' +
-                 'WHERE p.license = (SELECT license FROM players WHERE license IS NOT NULL LIMIT 1)'; // Get all chars with same license
+                 'WHERE p.license = ?';
     console.log('Executing query:', query);
+    console.log('With license:', license);
     
-    const [players] = await db.promise().query(query);
+    const [players] = await db.promise().query(query, [license]);
     console.log('Query result:', players);
     
     if (players.length === 0) {
+      console.log('No characters found for license:', license);
       return res.status(404).json({ error: 'No characters found' });
     }
     
     // Map all characters to response format
     const characters = players.map(player => {
+      console.log('Processing player:', player.citizenid);
+      console.log('Raw money:', player.money);
+      console.log('Raw charinfo:', player.charinfo);
+      
       const moneyData = JSON.parse(player.money || '{}');
       const charInfo = JSON.parse(player.charinfo || '{}');
-      console.log('Character Info:', charInfo);
+      console.log('Parsed money:', moneyData);
+      console.log('Parsed charinfo:', charInfo);
       
-      return {
+      const character = {
         citizenId: player.citizenid,
         firstName: charInfo.firstname || '',
         lastName: charInfo.lastname || '',
@@ -177,8 +192,12 @@ app.get('/api/player-info', async (req, res) => {
         bank: parseFloat(moneyData.bank) || 0,
         bloodMoney: parseFloat(moneyData.bloodmoney) || 0
       };
+      
+      console.log('Processed character:', character);
+      return character;
     });
 
+    console.log('Sending characters:', characters);
     res.json(characters);
   } catch (error) {
     console.error('Error fetching player info:', error);
