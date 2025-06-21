@@ -26,6 +26,22 @@
         border-radius: 15px;
         margin-top: 20px;
       }
+      .player-header {
+        margin-bottom: 25px;
+        border-bottom: 2px solid #8b0000;
+        padding-bottom: 15px;
+      }
+      .player-name {
+        color: #ffd700; /* Gold color for money */
+        font-size: 1.8em;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      .citizen-id {
+        color: #8b0000;
+        font-size: 1.3em;
+        font-weight: bold;
+      }
       .money-box {
         background: rgba(139,0,0,0.1);
         border: 1px solid #8b0000;
@@ -42,12 +58,6 @@
         color: #ffd700; /* Gold color for money */
         font-size: 1.5em;
         font-weight: bold;
-      }
-      .citizen-id {
-        color: #8b0000;
-        font-size: 1.3em;
-        font-weight: bold;
-        margin-bottom: 20px;
       }
     </style>
   </head>
@@ -105,8 +115,13 @@
                     <div class="col-lg-12">
                       <h1 class="dashboard-title">Player Dashboard</h1>
                       <div class="player-info">
-                        <div class="citizen-id">
-                          <i class="fa fa-id-card"></i> Citizen ID: <span id="citizenId">Loading...</span>
+                        <div class="player-header">
+                          <div class="player-name">
+                            <span id="playerName">Loading...</span>
+                          </div>
+                          <div class="citizen-id">
+                            <i class="fa fa-id-card"></i> Citizen ID: <span id="citizenId">Loading...</span>
+                          </div>
                         </div>
                         <div class="row">
                           <div class="col-md-4">
@@ -183,10 +198,9 @@
     <script src="assets/js/custom.js"></script>
     <script>
       function formatMoney(amount) {
-        return amount.toLocaleString('en-US');
+        return amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       }
 
-      // Load player info when the page loads
       window.onload = async function() {
         try {
           const response = await fetch('http://localhost:3001/api/player-info', {
@@ -198,6 +212,17 @@
 
           if (response.ok) {
             const data = await response.json();
+            console.log('Player data:', data); // Add this to see what we receive
+            
+            // Update player name - try different combinations
+            let displayName = data.fullName; // Try fullname first
+            if (!displayName) {
+                // Try combining first and last name
+                displayName = `${data.firstName} ${data.lastName}`.trim();
+            }
+            document.getElementById('playerName').textContent = displayName || 'Unknown';
+            
+            // Update other fields
             document.getElementById('citizenId').textContent = data.citizenId || 'Not found';
             document.getElementById('cash').textContent = formatMoney(data.cash);
             document.getElementById('valBank').textContent = formatMoney(data.valBank);
@@ -209,6 +234,7 @@
           } else {
             const error = await response.json();
             console.error('Error:', error);
+            document.getElementById('playerName').textContent = 'Error loading data';
             document.getElementById('citizenId').textContent = 'Error loading data';
             document.getElementById('cash').textContent = 'Error';
             document.getElementById('valBank').textContent = 'Error';
@@ -220,6 +246,7 @@
           }
         } catch (error) {
           console.error('Error:', error);
+          document.getElementById('playerName').textContent = 'Error loading data';
           document.getElementById('citizenId').textContent = 'Error loading data';
           document.getElementById('cash').textContent = 'Error';
           document.getElementById('valBank').textContent = 'Error';

@@ -147,9 +147,9 @@ app.get('/api/player-info', async (req, res) => {
     const [columns] = await db.promise().query('DESCRIBE players');
     console.log('Players table structure:', columns);
 
-    // Get user info from players table with money column
+    // Get user info from players table with money and charinfo columns
     const [players] = await db.promise().query(
-      'SELECT citizenid, money FROM players LIMIT 1'
+      'SELECT citizenid, money, charinfo FROM players LIMIT 1'
     );
     console.log('Query result:', players);
     
@@ -159,8 +159,15 @@ app.get('/api/player-info', async (req, res) => {
     
     const player = players[0];
     const moneyData = JSON.parse(player.money);
+    const charInfo = JSON.parse(player.charinfo);
+    console.log('Character Info:', charInfo); // Debug log
+    console.log('Raw charinfo:', player.charinfo); // Debug raw string
+    
     res.json({
       citizenId: player.citizenid,
+      firstName: charInfo.firstname || charInfo.firstName || '',
+      lastName: charInfo.lastname || charInfo.lastName || '',
+      fullName: charInfo.fullname || charInfo.name || '',
       cash: parseFloat(moneyData.cash) || 0,
       valBank: parseFloat(moneyData.valbank) || 0,
       armBank: parseFloat(moneyData.armbank) || 0,
