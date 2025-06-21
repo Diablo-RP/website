@@ -158,10 +158,15 @@ app.get('/api/player-info', async (req, res) => {
     }
     
     const player = players[0];
+    const moneyData = JSON.parse(player.money);
     res.json({
       citizenId: player.citizenid,
-      cash: parseInt(player.money) || 0,
-      bank: parseInt(player.money) || 0 // Using money for both since that's what we have
+      cash: parseFloat(moneyData.cash) || 0,
+      valBank: parseFloat(moneyData.valbank) || 0,
+      armBank: parseFloat(moneyData.armbank) || 0,
+      rhoBank: parseFloat(moneyData.rhobank) || 0,
+      blkBank: parseFloat(moneyData.blkbank) || 0,
+      bloodMoney: parseFloat(moneyData.bloodmoney) || 0
     });
   } catch (error) {
     console.error('Error fetching player info:', error);
