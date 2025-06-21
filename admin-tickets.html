@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Diablo County RP - Admin Tickets</title>
+    <link rel="icon" type="image/x-icon" href="assets/images/logo.png">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Stint+Ultra+Condensed&display=swap" rel="stylesheet">
+    <!-- Bootstrap core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Additional CSS Files -->
+    <link rel="stylesheet" href="assets/css/fontawesome.css">
+    <link rel="stylesheet" href="assets/css/diablo.css">
+    <!-- Rich Text Editor -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Stint Ultra Condensed', cursive;
+        font-size: 1.2em;
+      }
+      .admin-title {
+        font-family: 'Stint Ultra Condensed', cursive;
+        color: #8b0000;
+        font-size: 3.5em;
+        text-transform: uppercase;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        margin-bottom: 30px;
+        text-align: center;
+        letter-spacing: 2px;
+      }
+      .ticket-filters {
+        background: rgba(0,0,0,0.7);
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+      }
+      .ticket-list {
+        background: rgba(0,0,0,0.7);
+        padding: 30px;
+        border-radius: 15px;
+      }
+      .ticket-item {
+        border-bottom: 1px solid #8b0000;
+        padding: 15px 0;
+      }
+      .ticket-status {
+        font-weight: bold;
+      }
+      .ticket-response {
+        background: rgba(0,0,0,0.5);
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 15px;
+      }
+      #editor {
+        height: 200px;
+        background: white;
+      }
+      .ql-container {
+        font-family: 'Stint Ultra Condensed', cursive;
+        font-size: 1.2em;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ***** Header Area Start ***** -->
+    <header class="header-area header-sticky">
+      <div class="container">
+        <div class="row">
+          <div class="col-12">
+            <nav class="main-nav">
+              <a href="index.html" class="logo">
+                <img src="assets/images/logo.png" alt="Diablo County RP">
+              </a>
+              <ul class="nav">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="rules.html">Rules</a></li>
+                <li><a href="player-dashboard.html">Dashboard</a></li>
+                <li><a href="admin-tickets.html" class="active">Admin Tickets</a></li>
+                <li><a href="signin.html">Sign Out</a></li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="container mt-5 pt-5">
+      <h1 class="admin-title">Ticket Management</h1>
+      
+      <!-- Ticket Filters -->
+      <div class="ticket-filters">
+        <div class="row">
+          <div class="col-md-3">
+            <div class="form-group">
+              <label class="text-white">Status</label>
+              <select class="form-control" id="statusFilter">
+                <option value="">All</option>
+                <option value="open">Open</option>
+                <option value="in_progress">In Progress</option>
+                <option value="closed">Closed</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="form-group">
+              <label class="text-white">Category</label>
+              <select class="form-control" id="categoryFilter">
+                <option value="">All</option>
+                <option value="technical">Technical</option>
+                <option value="gameplay">Gameplay</option>
+                <option value="player">Player Report</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="text-white">Search</label>
+              <input type="text" class="form-control" id="searchFilter" placeholder="Search tickets...">
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="form-group">
+              <label class="text-white">&nbsp;</label>
+              <button class="btn btn-primary form-control" onclick="applyFilters()">Apply</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ticket List -->
+      <div class="ticket-list">
+        <div id="ticketsList">
+          <!-- Tickets will be loaded here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Ticket Response Modal -->
+    <div class="modal fade" id="responseModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark">
+          <div class="modal-header">
+            <h5 class="modal-title text-white">Respond to Ticket</h5>
+            <button type="button" class="close text-white" data-dismiss="modal">
+              <span>&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div id="editor"></div>
+            <div class="form-group mt-3">
+              <label class="text-white">Update Status</label>
+              <select class="form-control" id="ticketStatus">
+                <option value="open">Open</option>
+                <option value="in_progress">In Progress</option>
+                <option value="closed">Closed</option>
+              </select>
+            </div>
+            <div class="form-check mt-3">
+              <input type="checkbox" class="form-check-input" id="sendEmail">
+              <label class="form-check-label text-white">Send email notification to user</label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" onclick="submitResponse()">Submit Response</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script>
+      let quill;
+      let currentTicketId;
+
+      $(document).ready(function() {
+        // Check admin authentication
+        const characterId = sessionStorage.getItem('characterId');
+        if (!characterId) {
+          window.location.href = '/signin.html';
+          return;
+        }
+
+        // Initialize rich text editor
+        quill = new Quill('#editor', {
+          theme: 'snow',
+          placeholder: 'Type your response here...',
+          modules: {
+            toolbar: [
+              ['bold', 'italic', 'underline'],
+              [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+              ['clean']
+            ]
+          }
+        });
+
+        // Load initial tickets
+        loadTickets();
+
+        // Set up filters
+        $('#statusFilter, #categoryFilter').on('change', applyFilters);
+        $('#searchFilter').on('keyup', debounce(applyFilters, 300));
+      });
+
+      function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+          const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+          };
+          clearTimeout(timeout);
+          timeout = setTimeout(later, wait);
+        };
+      }
+
+      function applyFilters() {
+        loadTickets({
+          status: $('#statusFilter').val(),
+          category: $('#categoryFilter').val(),
+          search: $('#searchFilter').val()
+        });
+      }
+
+      function loadTickets(filters = {}) {
+        $.ajax({
+          url: '/api/admin/tickets',
+          method: 'GET',
+          headers: {
+            'character-id': sessionStorage.getItem('characterId')
+          },
+          data: filters,
+          success: function(response) {
+            const ticketsList = $('#ticketsList');
+            ticketsList.empty();
+
+            if (response.tickets.length === 0) {
+              ticketsList.html('<p class="text-white">No tickets found.</p>');
+              return;
+            }
+
+            response.tickets.forEach(ticket => {
+              const statusClass = {
+                'open': 'text-warning',
+                'in_progress': 'text-info',
+                'closed': 'text-success'
+              }[ticket.status];
+
+              const ticketHtml = `
+                <div class="ticket-item">
+                  <div class="row">
+                    <div class="col-md-8">
+                      <h3 class="text-white">${ticket.subject}</h3>
+                      <p class="text-white-50">Category: ${ticket.category}</p>
+                      <p class="text-white-50">${ticket.description}</p>
+                      <p>
+                        <span class="ticket-status ${statusClass}">Status: ${ticket.status}</span>
+                        <small class="text-white-50 ml-3">Created: ${new Date(ticket.created_at).toLocaleString()}</small>
+                        <small class="text-white-50 ml-3">By: ${ticket.character_id}</small>
+                      </p>
+                    </div>
+                    <div class="col-md-4 text-right">
+                      <button class="btn btn-primary" onclick="openResponseModal(${ticket.id})">
+                        Respond
+                      </button>
+                    </div>
+                  </div>
+                  ${ticket.responses ? `
+                    <div class="ticket-responses">
+                      ${ticket.responses.map(response => `
+                        <div class="ticket-response">
+                          <p class="text-white-50">${response.content}</p>
+                          <small class="text-white-50">
+                            Response by: Admin - ${new Date(response.created_at).toLocaleString()}
+                          </small>
+                        </div>
+                      `).join('')}
+                    </div>
+                  ` : ''}
+                </div>
+              `;
+              ticketsList.append(ticketHtml);
+            });
+          },
+          error: function(xhr) {
+            const error = xhr.responseJSON?.error || 'Unknown error';
+            if (xhr.status === 401) {
+              alert('Session expired. Please sign in again.');
+              window.location.href = '/signin.html';
+            } else {
+              alert('Error loading tickets: ' + error);
+            }
+          }
+        });
+      }
+
+      function openResponseModal(ticketId) {
+        currentTicketId = ticketId;
+        quill.setContents([{ insert: '' }]);
+        $('#ticketStatus').val('in_progress');
+        $('#sendEmail').prop('checked', true);
+        $('#responseModal').modal('show');
+      }
+
+      function submitResponse() {
+        const response = quill.root.innerHTML;
+        const status = $('#ticketStatus').val();
+        const sendEmail = $('#sendEmail').is(':checked');
+
+        if (!response.trim()) {
+          alert('Please enter a response');
+          return;
+        }
+
+        $.ajax({
+          url: `/api/admin/tickets/${currentTicketId}/respond`,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'character-id': sessionStorage.getItem('characterId')
+          },
+          data: JSON.stringify({
+            response,
+            status,
+            sendEmail
+          }),
+          success: function() {
+            $('#responseModal').modal('hide');
+            loadTickets();
+          },
+          error: function(xhr) {
+            const error = xhr.responseJSON?.error || 'Unknown error';
+            if (xhr.status === 401) {
+              alert('Session expired. Please sign in again.');
+              window.location.href = '/signin.html';
+            } else {
+              alert('Error submitting response: ' + error);
+            }
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

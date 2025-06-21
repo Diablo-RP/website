@@ -194,6 +194,18 @@
                       <span class="ticket-status ${statusClass}">Status: ${ticket.status}</span>
                       <small class="text-white-50 ml-3">Created: ${new Date(ticket.created_at).toLocaleString()}</small>
                     </p>
+                    ${ticket.responses ? `
+                      <div class="ticket-responses">
+                        ${ticket.responses.map(response => `
+                          <div class="ticket-response">
+                            <div class="response-content">${response.content}</div>
+                            <small class="text-white-50">
+                              Response from Admin - ${new Date(response.created_at).toLocaleString()}
+                            </small>
+                          </div>
+                        `).join('')}
+                      </div>
+                    ` : ''}
                     ${ticket.status !== 'closed' ? `
                       <button class="btn btn-sm btn-danger close-ticket" data-ticket-id="${ticket.id}">
                         Close Ticket
