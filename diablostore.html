@@ -9,6 +9,9 @@
 
     <title>Diablo RP - Diablo Store</title>
 
+    <!-- PayPal SDK -->
+    <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
+    
     <!-- Bootstrap core CSS -->
     <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
@@ -116,13 +119,13 @@ https://templatemo.com/tm-589-lugx-gaming
         <div class="col-lg-3 col-md-6 align-self-center mb-30 trending-items col-md-6 adv">
           <div class="item">
             <div class="thumb">
-              <a href="join.html"><img src="assets/images/trending-01.jpg" alt=""></a>
-              <span class="price"><em>$36</em>$24</span>
+              <a href="#"><img src="assets/images/trending-01.jpg" alt=""></a>
+              <span class="price"><em>$28</em>$20</span>
             </div>
             <div class="down-content">
-              <span class="category">Large Picture Frame</span>
-              <h4>Upload Your Image</h4>
-              <a href="join.html"><i class="fa fa-shopping-bag"></i></a>
+              <span class="category">Store Item</span>
+              <h4>Premium Package 1</h4>
+              <div id="paypal-button-1"></div>
             </div>
           </div>
         </div>
@@ -133,8 +136,8 @@ https://templatemo.com/tm-589-lugx-gaming
               <span class="price"><em>$32</em>$22</span>
             </div>
             <div class="down-content">
-              <span class="category">Medium Picture Frame</span>
-              <h4>Upload Your Image</h4>
+              <span class="category">Action</span>
+              <h4>Assasin Creed</h4>
               <a href="join.html"><i class="fa fa-shopping-bag"></i></a>
             </div>
           </div>
@@ -287,7 +290,7 @@ https://templatemo.com/tm-589-lugx-gaming
   <footer>
     <div class="container">
       <div class="col-lg-12">
-        <p>Copyright © 2024 Diablo RP. All rights reserved. &nbsp;&nbsp; <a rel="nofollow" href="https://templatemo.com" target="_blank"></a></p>
+        <p>Copyright &copy; 2024 Diablo RP. All rights reserved. &nbsp;&nbsp; <a rel="nofollow" href="https://templatemo.com" target="_blank"></a></p>
       </div>
     </div>
   </footer>
@@ -300,6 +303,45 @@ https://templatemo.com/tm-589-lugx-gaming
   <script src="assets/js/owl-carousel.js"></script>
   <script src="assets/js/counter.js"></script>
   <script src="assets/js/custom.js"></script>
+
+  <!-- PayPal Integration -->
+  <script>
+    paypal.Buttons({
+      createOrder: function(data, actions) {
+        return actions.order.create({
+          purchase_units: [{
+            amount: {
+              value: '20.00'
+            },
+            description: 'Premium Package 1'
+          }]
+        });
+      },
+      onApprove: function(data, actions) {
+        return actions.order.capture().then(function(details) {
+          // Send order details to our server
+          return fetch('/api/process-payment', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              orderID: data.orderID,
+              payerID: data.payerID,
+              paymentID: details.id,
+              itemName: 'Premium Package 1'
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if(data.success) {
+              alert('Thank you for your purchase!');
+            }
+          });
+        });
+      }
+    }).render('#paypal-button-1');
+  </script>
 
   </body>
 </html>

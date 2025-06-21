@@ -6,6 +6,11 @@ const nodemailer = require('nodemailer');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 require('dotenv').config();
 
+// PayPal configuration
+const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
+const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
+const PAYPAL_API = 'https://api-m.paypal.com';
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -200,6 +205,28 @@ db.connect((err) => {
               console.error('Error creating characters table:', err);
             } else {
               console.log('Characters table ready');
+            }
+          });
+
+          // Create transactions table if it doesn't exist
+          const createTransactionsTable = `
+            CREATE TABLE IF NOT EXISTS transactions (
+              id INT AUTO_INCREMENT PRIMARY KEY,
+              order_id VARCHAR(255) NOT NULL,
+              payer_id VARCHAR(255) NOT NULL,
+              payment_id VARCHAR(255) NOT NULL,
+              item_name VARCHAR(255) NOT NULL,
+              amount DECIMAL(10,2) NOT NULL,
+              status ENUM('pending', 'completed', 'failed') DEFAULT 'pending',
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+          `;
+          
+          db.query(createTransactionsTable, (err) => {
+            if (err) {
+              console.error('Error creating transactions table:', err);
+            } else {
+              console.log('Transactions table ready');
             }
           });
         }
@@ -792,6 +819,39 @@ app.post('/api/admin/tickets/:id/respond', authenticateAdmin, async (req, res) =
   } catch (error) {
     console.error('Error responding to ticket:', error);
     res.status(500).json({ error: 'Failed to respond to ticket' });
+  }
+});
+
+// Process PayPal payment
+app.post('/api/process-payment', async (req, res) => {
+  try {
+    const { orderID, payerID, paymentID, itemName } = req.body;
+
+    // Verify the payment with PayPal
+    const response = await fetch(`${PAYPAL_API}/v2/checkout/orders/${orderID}/capture`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const data = await response.json();
+
+    if (data.status === 'COMPLETED') {
+      // Save the transaction to database
+      await db.promise().query(
+        'INSERT INTO transactions (order_id, payer_id, payment_id, item_name, amount, status) VALUES (?, ?, ?, ?, ?, ?)',
+        [orderID, payerID, paymentID, itemName, data.purchase_units[0].amount.value, 'completed']
+      );
+
+      res.json({ success: true, message: 'Payment processed successfully' });
+    } else {
+      res.status(400).json({ success: false, message: 'Payment failed' });
+    }
+  } catch (error) {
+    console.error('Payment processing error:', error);
+    res.status(500).json({ success: false, message: 'Error processing payment' });
   }
 });
 
