@@ -3,6 +3,7 @@ const mysql = require('mysql2');
 const bcrypt = require('bcryptjs');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
+const fetch = require('node-fetch');
 require('dotenv').config();
 
 const app = express();
@@ -109,6 +110,54 @@ db.connect((err) => {
     }
   });
 });
+
+// Discord webhook configuration
+const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
+
+// Function to send Discord notification
+async function sendDiscordNotification(ticket, user) {
+  if (!DISCORD_WEBHOOK_URL) return;
+
+  try {
+    const embed = {
+      title: '🎫 New Support Ticket',
+      color: 0x8b0000, // Dark red color
+      fields: [
+        {
+          name: 'Subject',
+          value: ticket.subject
+        },
+        {
+          name: 'Category',
+          value: ticket.category
+        },
+        {
+          name: 'Description',
+          value: ticket.description.length > 1024 ? 
+            ticket.description.substring(0, 1021) + '...' : 
+            ticket.description
+        },
+        {
+          name: 'Submitted By',
+          value: user.character_id
+        }
+      ],
+      timestamp: new Date().toISOString()
+    };
+
+    await fetch(DISCORD_WEBHOOK_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        embeds: [embed]
+      })
+    });
+  } catch (error) {
+    console.error('Error sending Discord notification:', error);
+  }
+}
 
 // Register new user
 app.post('/api/register', async (req, res) => {
@@ -319,18 +368,29 @@ app.post('/api/tickets', authenticateUser, async (req, res) => {
     const { subject, category, description } = req.body;
 
     if (!subject || !category || !description) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ error: 'All fields are required' });
     }
 
+    // Insert the ticket
     const [result] = await db.promise().query(
       'INSERT INTO tickets (user_id, subject, category, description) VALUES (?, ?, ?, ?)',
       [req.user.id, subject, category, description]
     );
 
-    res.json({
-      success: true,
-      ticketId: result.insertId,
-      message: 'Ticket created successfully'
+    // Get the created ticket
+    const [tickets] = await db.promise().query(
+      'SELECT * FROM tickets WHERE id = ?',
+      [result.insertId]
+    );
+
+    if (tickets.length > 0) {
+      // Send Discord notification
+      await sendDiscordNotification(tickets[0], req.user);
+    }
+
+    res.json({ 
+      message: 'Ticket created successfully',
+      ticket: tickets[0]
     });
   } catch (error) {
     console.error('Error creating ticket:', error);
