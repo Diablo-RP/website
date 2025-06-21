@@ -144,7 +144,7 @@ app.get('/api/player-info', async (req, res) => {
     const [players] = await db.promise().query(
       'SELECT p.citizenid, p.money, p.charinfo, COALESCE(v.amount, 0) as vip_coins ' +
       'FROM players p ' +
-      'LEFT JOIN cas_vip_coin v ON v.steam = p.citizenid ' + // Try steam instead of citizenid
+      'LEFT JOIN cas_vip_coin v ON v.identifier = p.citizenid ' + // Use identifier instead of steam
       'LIMIT 1'
     );
     console.log('Query result:', players);
