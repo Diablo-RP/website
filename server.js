@@ -136,20 +136,12 @@ app.post('/api/login', async (req, res) => {
 // Get player info
 app.get('/api/player-info', async (req, res) => {
   try {
-    // First check if we can query the database
-    const [tables] = await db.promise().query('SHOW TABLES LIKE "players"');
-    if (tables.length === 0) {
-      console.error('Players table not found');
-      return res.status(500).json({ error: 'Players table not found in database' });
-    }
-
-    // Get the table structure
-    const [columns] = await db.promise().query('DESCRIBE players');
-    console.log('Players table structure:', columns);
-
-    // Get user info from players table with money and charinfo columns
+    // First get player info
     const [players] = await db.promise().query(
-      'SELECT citizenid, money, charinfo FROM players LIMIT 1'
+      'SELECT p.citizenid, p.money, p.charinfo, COALESCE(v.amount, 0) as vip_coins ' +
+      'FROM players p ' +
+      'LEFT JOIN cas_vip_coin v ON p.citizenid = v.citizenid ' +
+      'LIMIT 1'
     );
     console.log('Query result:', players);
     
@@ -160,13 +152,13 @@ app.get('/api/player-info', async (req, res) => {
     const player = players[0];
     const moneyData = JSON.parse(player.money);
     const charInfo = JSON.parse(player.charinfo);
-    console.log('Character Info:', charInfo); // Debug log
-    console.log('Raw charinfo:', player.charinfo); // Debug raw string
+    console.log('Character Info:', charInfo);
     
     res.json({
       citizenId: player.citizenid,
-      firstName: charInfo.firstname, 
-      lastName: charInfo.lastname,   
+      firstName: charInfo.firstname,
+      lastName: charInfo.lastname,
+      vipCoins: parseInt(player.vip_coins) || 0,
       cash: parseFloat(moneyData.cash) || 0,
       valBank: parseFloat(moneyData.valbank) || 0,
       armBank: parseFloat(moneyData.armbank) || 0,

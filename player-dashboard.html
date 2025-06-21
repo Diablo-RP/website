@@ -59,6 +59,22 @@
         font-size: 1.5em;
         font-weight: bold;
       }
+      .vip-coins {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(139,0,0,0.9);
+        color: #ffd700;
+        padding: 15px 25px;
+        border-radius: 10px;
+        font-size: 1.2em;
+        font-weight: bold;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        z-index: 1000;
+      }
+      .vip-coins i {
+        margin-right: 8px;
+      }
     </style>
   </head>
 
@@ -183,6 +199,11 @@
       </div>
     </div>
 
+    <!-- VIP Coins Display -->
+    <div class="vip-coins">
+      <i class="fa fa-crown"></i>VIP Coins: <span id="vipCoins">0</span>
+    </div>
+
     <footer>
       <div class="container">
         <div class="col-lg-12">
@@ -220,6 +241,7 @@
             
             // Update other fields
             document.getElementById('citizenId').textContent = data.citizenId || 'Not found';
+            document.getElementById('vipCoins').textContent = data.vipCoins.toLocaleString();
             document.getElementById('cash').textContent = formatMoney(data.cash);
             document.getElementById('valBank').textContent = formatMoney(data.valBank);
             document.getElementById('armBank').textContent = formatMoney(data.armBank);
@@ -232,6 +254,7 @@
             console.error('Error:', error);
             document.getElementById('playerName').textContent = 'Error loading data';
             document.getElementById('citizenId').textContent = 'Error loading data';
+            document.getElementById('vipCoins').textContent = '0';
             document.getElementById('cash').textContent = 'Error';
             document.getElementById('valBank').textContent = 'Error';
             document.getElementById('armBank').textContent = 'Error';
@@ -244,6 +267,7 @@
           console.error('Error:', error);
           document.getElementById('playerName').textContent = 'Error loading data';
           document.getElementById('citizenId').textContent = 'Error loading data';
+          document.getElementById('vipCoins').textContent = '0';
           document.getElementById('cash').textContent = 'Error';
           document.getElementById('valBank').textContent = 'Error';
           document.getElementById('armBank').textContent = 'Error';
