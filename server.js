@@ -3,18 +3,11 @@ const mysql = require('mysql2');
 const bcrypt = require('bcryptjs');
 const cors = require('cors');
 require('dotenv').config();
-const session = require('express-session');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static('.')); // Serve static files
-app.use(session({
-  secret: 'secret-key',
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false }
-}));
 
 // Database connection
 // Database configuration
@@ -44,7 +37,6 @@ db.connect((err) => {
       steam_id VARCHAR(255) UNIQUE NOT NULL,
       password VARCHAR(255) NOT NULL,
       character_id VARCHAR(255) UNIQUE,
-      status ENUM('pending', 'approved', 'banned') DEFAULT 'pending',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `;
@@ -117,80 +109,16 @@ app.post('/api/login', async (req, res) => {
     
     const user = users[0];
     
-    // Check if user is banned
-    if (user.status === 'banned') {
-      return res.status(403).json({ error: 'Your account has been banned' });
-    }
-    
-    // Check if user is pending approval
-    if (user.status === 'pending') {
-      return res.status(403).json({ error: 'Your account is pending approval' });
-    }
-    
     // Verify password
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       return res.status(401).json({ error: 'Invalid character ID or password' });
     }
     
-    // Store user info in session
-    req.session.user = {
-      id: user.id,
-      steamId: user.steam_id,
-      characterId: user.character_id,
-      status: user.status
-    };
-    
-    res.json({ 
-      message: 'Login successful',
-      status: user.status
-    });
+    res.json({ message: 'Login successful' });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Error during login' });
-  }
-});
-
-// Get player info
-app.get('/api/player-info', async (req, res) => {
-  // Check if user is logged in
-  if (!req.session.user) {
-    return res.status(401).json({ error: 'Not logged in' });
-  }
-  
-  try {
-    // Get user info from database
-    const [users] = await db.promise().query(
-      'SELECT steam_id, character_id, status, created_at FROM users WHERE id = ?',
-      [req.session.user.id]
-    );
-    
-    if (users.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    const user = users[0];
-    
-    // Check if user is still allowed to access
-    if (user.status === 'banned') {
-      req.session.destroy();
-      return res.status(403).json({ error: 'Your account has been banned' });
-    }
-    
-    if (user.status === 'pending') {
-      req.session.destroy();
-      return res.status(403).json({ error: 'Your account is pending approval' });
-    }
-    
-    res.json({
-      steamId: user.steam_id,
-      characterId: user.character_id,
-      status: user.status,
-      createdAt: user.created_at
-    });
-  } catch (error) {
-    console.error('Error fetching player info:', error);
-    res.status(500).json({ error: 'Error fetching player information' });
   }
 });
 
