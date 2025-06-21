@@ -136,7 +136,7 @@ app.get('/api/player-info', async (req, res) => {
   try {
     // Get user info from players table
     const [players] = await db.promise().query(
-      'SELECT citizenid, money FROM players ORDER BY citizenid DESC LIMIT 1'
+      'SELECT citizenid, money FROM players LIMIT 1'
     );
     
     if (players.length === 0) {
@@ -146,7 +146,7 @@ app.get('/api/player-info', async (req, res) => {
     const player = players[0];
     res.json({
       citizenId: player.citizenid,
-      money: player.money
+      money: parseInt(player.money) || 0
     });
   } catch (error) {
     console.error('Error fetching player info:', error);

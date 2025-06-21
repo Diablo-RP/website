@@ -56,8 +56,8 @@
                       <h2>Player Dashboard</h2>
                       <div class="player-info">
                         <h4>Character Information</h4>
-                        <p><strong>Citizen ID:</strong> <span id="citizenId"></span></p>
-                        <p><strong>Money:</strong> $<span id="money"></span></p>
+                        <p><strong>Citizen ID:</strong> <span id="citizenId">Loading...</span></p>
+                        <p><strong>Money:</strong> $<span id="money">Loading...</span></p>
                       </div>
                     </div>
                   </div>
@@ -87,24 +87,27 @@
       // Load player info when the page loads
       window.onload = async function() {
         try {
-          const response = await fetch('/api/player-info', {
+          const response = await fetch('http://localhost:3001/api/player-info', {
             method: 'GET',
-            credentials: 'include'
+            headers: {
+              'Content-Type': 'application/json'
+            }
           });
 
-          if (!response.ok) {
+          if (response.ok) {
             const data = await response.json();
-            alert(data.error || 'Not logged in');
-            window.location.href = 'signin.html';
-            return;
+            document.getElementById('citizenId').textContent = data.citizenId || 'Not found';
+            document.getElementById('money').textContent = data.money ? data.money.toLocaleString() : '0';
+          } else {
+            const error = await response.json();
+            console.error('Error:', error);
+            document.getElementById('citizenId').textContent = 'Error loading data';
+            document.getElementById('money').textContent = 'Error loading data';
           }
-
-          const data = await response.json();
-          document.getElementById('citizenId').textContent = data.citizenId;
-          document.getElementById('money').textContent = data.money.toLocaleString();
         } catch (error) {
           console.error('Error:', error);
-          window.location.href = 'signin.html';
+          document.getElementById('citizenId').textContent = 'Error loading data';
+          document.getElementById('money').textContent = 'Error loading data';
         }
       };
     </script>
