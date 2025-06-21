@@ -21,6 +21,58 @@ body, html {
     background-color: var(--ash-black) !important;
 }
 
+/* Applications page styling */
+.contact-page.section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 0;
+}
+
+.contact-page .col-lg-6 {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.contact-page .left-text {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 40px;
+    background-color: var(--ash-black);
+    border: 1px solid var(--burnt-gold);
+    border-radius: 25px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.contact-page .left-text ul {
+    list-style: none;
+    padding: 0;
+    margin: 30px 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
+.contact-page .left-text ul li {
+    margin: 0;
+}
+
+.contact-page .btn-primary {
+    min-width: 200px;
+    padding: 15px 30px;
+    font-size: 1.1em;
+    background-color: var(--blood-red);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.contact-page .btn-primary:hover {
+    background-color: var(--burnt-gold);
+    transform: translateY(-2px);
+}
+
 /* Lore section styling */
 .left-text.mb-5 {
     max-width: 800px;
