@@ -308,6 +308,75 @@
         color: #8B7355;
         font-size: 1.2em;
       }
+
+      .admin-section {
+        grid-column: 1 / -1;
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background: rgba(28, 28, 28, 0.95);
+        border: 2px solid #8B0000;
+        border-radius: 8px;
+      }
+
+      .admin-section .section-header {
+        color: #D4AF37;
+        font-size: 1.8em;
+        margin-bottom: 1rem;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      }
+
+      .ticket-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .stat-box {
+        background: rgba(139, 0, 0, 0.2);
+        border: 1px solid #8B0000;
+        padding: 1rem;
+        border-radius: 6px;
+        text-align: center;
+      }
+
+      .stat-label {
+        color: #8B7355;
+        font-size: 1.1em;
+        margin-bottom: 0.5rem;
+      }
+
+      .stat-value {
+        color: #D4AF37;
+        font-size: 1.6em;
+        font-weight: bold;
+      }
+
+      .admin-actions {
+        text-align: center;
+      }
+
+      .admin-button {
+        display: inline-block;
+        padding: 0.8rem 1.5rem;
+        background: linear-gradient(45deg, #8B0000, #2C2C2C);
+        border: 2px solid #D4AF37;
+        border-radius: 25px;
+        color: #D4AF37;
+        font-size: 1.1em;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        margin: 0 0.5rem;
+      }
+
+      .admin-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(139, 0, 0, 0.3);
+        color: #D4AF37;
+        text-decoration: none;
+      }
     </style>
 
     <script>
@@ -383,6 +452,37 @@
                 </div>
               </div>
             `);
+
+            // Add admin section if user is admin
+            if (sessionStorage.getItem('isAdmin') === 'true') {
+              moneyGrid.append(`
+                <div class="admin-section">
+                  <div class="section-header">Administration Panel</div>
+                  <div class="ticket-stats">
+                    <div class="stat-box">
+                      <div class="stat-label">Open Tickets</div>
+                      <div class="stat-value">0</div>
+                    </div>
+                    <div class="stat-box">
+                      <div class="stat-label">Pending Review</div>
+                      <div class="stat-value">0</div>
+                    </div>
+                    <div class="stat-box">
+                      <div class="stat-label">Resolved Today</div>
+                      <div class="stat-value">0</div>
+                    </div>
+                  </div>
+                  <div class="admin-actions">
+                    <a href="admin-tickets.html" class="admin-button">
+                      <i class="fa fa-ticket"></i> Manage Tickets
+                    </a>
+                    <a href="#" class="admin-button">
+                      <i class="fa fa-chart-bar"></i> View Reports
+                    </a>
+                  </div>
+                </div>
+              `);
+            }
 
             characterDiv.append(moneyGrid);
             container.append(characterDiv);
