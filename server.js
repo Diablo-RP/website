@@ -15,7 +15,7 @@ const dbConfig = {
   host: 'localhost',
   user: 'root',
   password: '',  // Leave empty if no password is set
-  database: 'rsg_dev',
+  database: 'Diablorp',
   port: 3306
 };
 
@@ -114,7 +114,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
