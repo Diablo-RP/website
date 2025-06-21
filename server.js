@@ -144,38 +144,41 @@ app.get('/api/player-info', async (req, res) => {
     const [columns] = await db.promise().query('DESCRIBE cas_vip_coin');
     console.log('VIP Coins table structure:', columns);
 
-    // First get player info with VIP coins
+    // Get all characters for the steam ID with VIP coins
     const query = 'SELECT p.citizenid, p.money, p.charinfo, p.license, COALESCE(v.amount, 0) as vip_coins ' +
                  'FROM players p ' +
                  'LEFT JOIN cas_vip_coin v ON v.identifier = p.license ' +
-                 'LIMIT 1';
+                 'ORDER BY p.citizenid';
     console.log('Executing query:', query);
     
     const [players] = await db.promise().query(query);
     console.log('Query result:', players);
     
     if (players.length === 0) {
-      return res.status(404).json({ error: 'Player not found' });
+      return res.status(404).json({ error: 'No players found' });
     }
     
-    const player = players[0];
-    const moneyData = JSON.parse(player.money);
-    const charInfo = JSON.parse(player.charinfo);
-    console.log('Character Info:', charInfo);
-    
-    res.json({
-      citizenId: player.citizenid,
-      firstName: charInfo.firstname,
-      lastName: charInfo.lastname,
-      vipCoins: parseInt(player.vip_coins) || 0,
-      cash: parseFloat(moneyData.cash) || 0,
-      valBank: parseFloat(moneyData.valbank) || 0,
-      armBank: parseFloat(moneyData.armbank) || 0,
-      rhoBank: parseFloat(moneyData.rhobank) || 0,
-      blkBank: parseFloat(moneyData.blkbank) || 0,
-      bank: parseFloat(moneyData.bank) || 0,
-      bloodMoney: parseFloat(moneyData.bloodmoney) || 0
+    // Map all characters to their data
+    const characters = players.map(player => {
+      const moneyData = JSON.parse(player.money);
+      const charInfo = JSON.parse(player.charinfo);
+      
+      return {
+        citizenId: player.citizenid,
+        firstName: charInfo.firstname,
+        lastName: charInfo.lastname,
+        vipCoins: parseInt(player.vip_coins) || 0,
+        cash: parseFloat(moneyData.cash) || 0,
+        valBank: parseFloat(moneyData.valbank) || 0,
+        armBank: parseFloat(moneyData.armbank) || 0,
+        rhoBank: parseFloat(moneyData.rhobank) || 0,
+        blkBank: parseFloat(moneyData.blkbank) || 0,
+        bank: parseFloat(moneyData.bank) || 0,
+        bloodMoney: parseFloat(moneyData.bloodmoney) || 0
+      };
     });
+
+    res.json(characters);
   } catch (error) {
     console.error('Error fetching player info:', error);
     res.status(500).json({ 
