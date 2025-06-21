@@ -9,7 +9,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('.')); // Serve static files
 
-// Database connection
 // Database configuration
 const dbConfig = {
   host: 'localhost',
@@ -19,7 +18,10 @@ const dbConfig = {
   port: 3306
 };
 
-console.log('Attempting to connect to database with config:', dbConfig);
+console.log('Attempting to connect to database with config:', {
+  ...dbConfig,
+  password: dbConfig.password ? '****' : ''
+});
 
 const db = mysql.createConnection(dbConfig);
 
@@ -28,7 +30,7 @@ db.connect((err) => {
     console.error('Error connecting to database:', err);
     return;
   }
-  console.log('Connected to MySQL database');
+  console.log('Connected to database successfully');
   
   // Create users table if it doesn't exist
   const createTableQuery = `
@@ -134,10 +136,22 @@ app.post('/api/login', async (req, res) => {
 // Get player info
 app.get('/api/player-info', async (req, res) => {
   try {
+    // First check if we can query the database
+    const [tables] = await db.promise().query('SHOW TABLES LIKE "players"');
+    if (tables.length === 0) {
+      console.error('Players table not found');
+      return res.status(500).json({ error: 'Players table not found in database' });
+    }
+
+    // Get the table structure
+    const [columns] = await db.promise().query('DESCRIBE players');
+    console.log('Players table structure:', columns);
+
     // Get user info from players table with all money columns
     const [players] = await db.promise().query(
       'SELECT citizenid, money, bank, crypto FROM players LIMIT 1'
     );
+    console.log('Query result:', players);
     
     if (players.length === 0) {
       return res.status(404).json({ error: 'Player not found' });
@@ -152,7 +166,10 @@ app.get('/api/player-info', async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching player info:', error);
-    res.status(500).json({ error: 'Error fetching player information' });
+    res.status(500).json({ 
+      error: 'Error fetching player information',
+      details: error.message
+    });
   }
 });
 
