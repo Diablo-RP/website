@@ -148,6 +148,25 @@
   <script src="assets/js/counter.js"></script>
   <script src="assets/js/custom.js"></script>
   <script>
+    function updateNavigation() {
+      const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+      const nav = document.querySelector('.main-nav .nav');
+      
+      // Remove existing admin tickets link if it exists
+      const existingAdminLink = nav.querySelector('li a[href="admin-tickets.html"]');
+      if (existingAdminLink) {
+        existingAdminLink.parentElement.remove();
+      }
+
+      // Add admin tickets link if user is admin
+      if (isAdmin) {
+        const supportLink = nav.querySelector('li a[href="tickets.html"]').parentElement;
+        const adminLink = document.createElement('li');
+        adminLink.innerHTML = '<a href="admin-tickets.html">Admin Tickets</a>';
+        nav.insertBefore(adminLink, supportLink.nextSibling);
+      }
+    }
+
     async function handleLogin(event) {
       event.preventDefault();
       
@@ -178,7 +197,11 @@
           // Store user info in sessionStorage for better security
           sessionStorage.setItem('userId', data.userId);
           sessionStorage.setItem('characterId', data.characterId);
+          sessionStorage.setItem('isAdmin', data.isAdmin);
           
+          // Update navigation to show admin link if admin
+          updateNavigation();
+
           alert('Login successful!');
           console.log('Redirecting to dashboard...');
           window.location.replace('player-dashboard.html');
@@ -190,6 +213,9 @@
         alert('Error during login');
       }
     }
+
+    // Update navigation on page load
+    document.addEventListener('DOMContentLoaded', updateNavigation);
   </script>
 </body>
 </html>

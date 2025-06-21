@@ -271,6 +271,41 @@
       });
     </script>
 
+    <script>
+      function updateNavigation() {
+        const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+        const nav = document.querySelector('.main-nav .nav');
+        
+        // Remove existing admin tickets link if it exists
+        const existingAdminLink = nav.querySelector('li a[href="admin-tickets.html"]');
+        if (existingAdminLink) {
+          existingAdminLink.parentElement.remove();
+        }
+
+        // Add admin tickets link if user is admin
+        if (isAdmin) {
+          const supportLink = nav.querySelector('li a[href="tickets.html"]').parentElement;
+          const adminLink = document.createElement('li');
+          adminLink.innerHTML = '<a href="admin-tickets.html">Admin Tickets</a>';
+          nav.insertBefore(adminLink, supportLink.nextSibling);
+        }
+      }
+
+      // Check authentication on page load
+      document.addEventListener('DOMContentLoaded', function() {
+        const characterId = sessionStorage.getItem('characterId');
+        if (!characterId) {
+          window.location.href = 'signin.html';
+          return;
+        }
+
+        // Update navigation to show admin link if admin
+        updateNavigation();
+
+        // Rest of your existing initialization code...
+      });
+    </script>
+
     <style>
       .character-card {
         background: rgba(0, 0, 0, 0.7);
