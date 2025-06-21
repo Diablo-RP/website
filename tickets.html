@@ -122,40 +122,38 @@
         // Check authentication
         const characterId = sessionStorage.getItem('characterId');
         if (!characterId) {
-          window.location.href = '/signin.html';
+          window.location.href = 'signin.html';
           return;
         }
 
         // Handle ticket submission
-        $('#ticketForm').on('submit', function(e) {
-          e.preventDefault();
+        $('#ticketForm').on('submit', function(event) {
+          event.preventDefault();
           
-          const ticketData = {
+          const formData = {
             subject: $('#subject').val(),
             category: $('#category').val(),
             description: $('#description').val()
           };
 
           $.ajax({
-            url: '/api/tickets',
+            url: 'http://localhost:3001/api/tickets',
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
-              'character-id': characterId
+              'character-id': characterId,
+              'Content-Type': 'application/json'
             },
-            data: JSON.stringify(ticketData),
+            data: JSON.stringify(formData),
             success: function(response) {
-              alert('Ticket created successfully!');
               $('#ticketForm')[0].reset();
               loadTickets();
+              alert('Ticket submitted successfully!');
             },
             error: function(xhr) {
-              const error = xhr.responseJSON?.error || 'Unknown error';
               if (xhr.status === 401) {
-                alert('Session expired. Please sign in again.');
-                window.location.href = '/signin.html';
+                window.location.href = 'signin.html';
               } else {
-                alert('Error creating ticket: ' + error);
+                alert('Error submitting ticket. Please try again later.');
               }
             }
           });
@@ -164,7 +162,7 @@
         // Load tickets
         function loadTickets() {
           $.ajax({
-            url: '/api/tickets',
+            url: 'http://localhost:3001/api/tickets',
             method: 'GET',
             headers: {
               'character-id': characterId
@@ -217,12 +215,10 @@
               });
             },
             error: function(xhr) {
-              const error = xhr.responseJSON?.error || 'Unknown error';
               if (xhr.status === 401) {
-                alert('Session expired. Please sign in again.');
-                window.location.href = '/signin.html';
+                window.location.href = 'signin.html';
               } else {
-                alert('Error loading tickets: ' + error);
+                alert('Error loading tickets. Please try again later.');
               }
             }
           });
@@ -233,23 +229,21 @@
           const ticketId = $(this).data('ticket-id');
           
           $.ajax({
-            url: `/api/tickets/${ticketId}`,
+            url: `http://localhost:3001/api/tickets/${ticketId}`,
             method: 'PATCH',
             headers: {
-              'Content-Type': 'application/json',
-              'character-id': characterId
+              'character-id': characterId,
+              'Content-Type': 'application/json'
             },
             data: JSON.stringify({ status: 'closed' }),
-            success: function() {
+            success: function(response) {
               loadTickets();
             },
             error: function(xhr) {
-              const error = xhr.responseJSON?.error || 'Unknown error';
               if (xhr.status === 401) {
-                alert('Session expired. Please sign in again.');
-                window.location.href = '/signin.html';
+                window.location.href = 'signin.html';
               } else {
-                alert('Error closing ticket: ' + error);
+                alert('Error closing ticket. Please try again later.');
               }
             }
           });

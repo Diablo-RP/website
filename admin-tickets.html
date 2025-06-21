@@ -233,13 +233,21 @@
       }
 
       function loadTickets(filters = {}) {
+        const characterId = sessionStorage.getItem('characterId');
+        if (!characterId) {
+          window.location.href = 'signin.html';
+          return;
+        }
+
+        const queryParams = new URLSearchParams(filters).toString();
+        const url = `http://localhost:3001/api/admin/tickets${queryParams ? '?' + queryParams : ''}`;
+
         $.ajax({
-          url: '/api/admin/tickets',
+          url: url,
           method: 'GET',
           headers: {
-            'character-id': sessionStorage.getItem('characterId')
+            'character-id': characterId
           },
-          data: filters,
           success: function(response) {
             const ticketsList = $('#ticketsList');
             ticketsList.empty();
@@ -313,28 +321,27 @@
       }
 
       function submitResponse() {
-        const response = quill.root.innerHTML;
-        const status = $('#ticketStatus').val();
-        const sendEmail = $('#sendEmail').is(':checked');
-
-        if (!response.trim()) {
-          alert('Please enter a response');
+        const characterId = sessionStorage.getItem('characterId');
+        if (!characterId) {
+          window.location.href = 'signin.html';
           return;
         }
 
+        const responseData = {
+          response: quill.root.innerHTML,
+          status: $('#ticketStatus').val(),
+          sendEmail: $('#sendEmail').prop('checked')
+        };
+
         $.ajax({
-          url: `/api/admin/tickets/${currentTicketId}/respond`,
+          url: `http://localhost:3001/api/admin/tickets/${currentTicketId}/respond`,
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'character-id': sessionStorage.getItem('characterId')
+            'character-id': characterId,
+            'Content-Type': 'application/json'
           },
-          data: JSON.stringify({
-            response,
-            status,
-            sendEmail
-          }),
-          success: function() {
+          data: JSON.stringify(responseData),
+          success: function(response) {
             $('#responseModal').modal('hide');
             loadTickets();
           },
