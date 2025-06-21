@@ -258,24 +258,23 @@
             }
 
             response.tickets.forEach(ticket => {
-              const statusClass = {
-                'open': 'text-warning',
-                'in_progress': 'text-info',
-                'closed': 'text-success'
-              }[ticket.status];
-
               const ticketHtml = `
                 <div class="ticket-item">
                   <div class="row">
                     <div class="col-md-8">
                       <h3 class="text-white">${ticket.subject}</h3>
-                      <p class="text-white-50">Category: ${ticket.category}</p>
-                      <p class="text-white-50">${ticket.description}</p>
-                      <p>
-                        <span class="ticket-status ${statusClass}">Status: ${ticket.status}</span>
-                        <small class="text-white-50 ml-3">Created: ${new Date(ticket.created_at).toLocaleString()}</small>
-                        <small class="text-white-50 ml-3">By: ${ticket.character_id}</small>
-                      </p>
+                      <div class="d-flex align-items-center mb-2">
+                        <span class="badge badge-${getStatusBadgeClass(ticket.status)} mr-2">${ticket.status.toUpperCase()}</span>
+                        <span class="text-white-50">Category: ${ticket.category}</span>
+                      </div>
+                      <div class="ticket-content bg-dark p-3 rounded mb-3">
+                        <p class="text-white-50">${ticket.description}</p>
+                      </div>
+                      <div class="ticket-meta text-white-50">
+                        <small>Created: ${new Date(ticket.created_at).toLocaleString()}</small>
+                        <small class="ml-3">By: ${ticket.character_id}</small>
+                        <small class="ml-3">Email: ${ticket.email}</small>
+                      </div>
                     </div>
                     <div class="col-md-4 text-right">
                       <button class="btn btn-primary" onclick="openResponseModal(${ticket.id})">
@@ -283,14 +282,19 @@
                       </button>
                     </div>
                   </div>
-                  ${ticket.responses ? `
-                    <div class="ticket-responses">
+                  ${ticket.responses && ticket.responses.length > 0 ? `
+                    <div class="ticket-responses mt-4">
+                      <h5 class="text-white mb-3">Previous Responses</h5>
                       ${ticket.responses.map(response => `
-                        <div class="ticket-response">
-                          <p class="text-white-50">${response.content}</p>
-                          <small class="text-white-50">
-                            Response by: Admin - ${new Date(response.created_at).toLocaleString()}
-                          </small>
+                        <div class="ticket-response mb-3">
+                          <div class="response-content bg-dark p-3 rounded">
+                            ${response.content}
+                          </div>
+                          <div class="response-meta mt-2">
+                            <small class="text-white-50">
+                              Response by Admin • ${new Date(response.created_at).toLocaleString()}
+                            </small>
+                          </div>
                         </div>
                       `).join('')}
                     </div>
@@ -310,6 +314,14 @@
             }
           }
         });
+      }
+
+      function getStatusBadgeClass(status) {
+        return {
+          'open': 'warning',
+          'in_progress': 'info',
+          'closed': 'success'
+        }[status] || 'secondary';
       }
 
       function openResponseModal(ticketId) {
