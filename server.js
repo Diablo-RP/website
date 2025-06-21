@@ -113,6 +113,10 @@ db.connect((err) => {
 
 // Discord webhook configuration
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
+const DISCORD_ADMIN_ROLE_ID = process.env.DISCORD_ADMIN_ROLE_ID;
+const DISCORD_MOD_ROLE_ID = process.env.DISCORD_MOD_ROLE_ID;
+const WEBSITE_URL = process.env.WEBSITE_URL || 'https://diablo-rp.com';
+
 const DISCORD_COLORS = {
   new: 0x8b0000,     // Dark red
   open: 0x00ff00,    // Green
@@ -128,11 +132,20 @@ async function sendDiscordNotification(type, data) {
   try {
     let embed = {
       color: DISCORD_COLORS[type],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      url: `${WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id}` // Link to ticket
     };
+
+    // Add footer with ticket ID
+    embed.footer = {
+      text: `Ticket ID: #${data.ticket.id}`
+    };
+
+    let content = ''; // For role mentions
 
     switch (type) {
       case 'new':
+        content = DISCORD_ADMIN_ROLE_ID ? `<@&${DISCORD_ADMIN_ROLE_ID}> New ticket requires attention!` : '';
         embed = {
           ...embed,
           title: '🎫 New Support Ticket',
@@ -146,6 +159,11 @@ async function sendDiscordNotification(type, data) {
               value: data.ticket.category
             },
             {
+              name: 'Priority',
+              value: getPriorityEmoji(data.ticket.category) + ' ' + 
+                     getPriorityText(data.ticket.category)
+            },
+            {
               name: 'Description',
               value: data.ticket.description.length > 1024 ? 
                 data.ticket.description.substring(0, 1021) + '...' : 
@@ -154,40 +172,55 @@ async function sendDiscordNotification(type, data) {
             {
               name: 'Submitted By',
               value: data.user.character_id
+            },
+            {
+              name: 'Quick Actions',
+              value: `[View Ticket](${WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id})`
             }
           ]
         };
         break;
 
       case 'status':
+        content = getStatusMention(data.newStatus);
         embed = {
           ...embed,
           title: `🔄 Ticket Status Updated`,
           fields: [
             {
               name: 'Ticket',
-              value: data.ticket.subject
+              value: `[#${data.ticket.id}] ${data.ticket.subject}`
             },
             {
               name: 'New Status',
-              value: data.newStatus.toUpperCase()
+              value: getStatusEmoji(data.newStatus) + ' ' + data.newStatus.toUpperCase()
+            },
+            {
+              name: 'Previous Status',
+              value: getStatusEmoji(data.ticket.status) + ' ' + data.ticket.status.toUpperCase()
             },
             {
               name: 'Updated By',
               value: data.user.character_id
+            },
+            {
+              name: 'Quick Actions',
+              value: `[View Ticket](${WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id})`
             }
           ]
         };
         break;
 
       case 'response':
+        content = data.newStatus === 'closed' ? '' : 
+                 (DISCORD_MOD_ROLE_ID ? `<@&${DISCORD_MOD_ROLE_ID}> Ticket updated` : '');
         embed = {
           ...embed,
           title: '💬 New Admin Response',
           fields: [
             {
               name: 'Ticket',
-              value: data.ticket.subject
+              value: `[#${data.ticket.id}] ${data.ticket.subject}`
             },
             {
               name: 'Response',
@@ -197,11 +230,17 @@ async function sendDiscordNotification(type, data) {
             },
             {
               name: 'Status',
-              value: data.newStatus ? data.newStatus.toUpperCase() : 'Unchanged'
+              value: data.newStatus ? 
+                getStatusEmoji(data.newStatus) + ' ' + data.newStatus.toUpperCase() : 
+                'Unchanged'
             },
             {
               name: 'Admin',
               value: data.user.character_id
+            },
+            {
+              name: 'Quick Actions',
+              value: `[View Ticket](${WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id})`
             }
           ]
         };
@@ -214,11 +253,65 @@ async function sendDiscordNotification(type, data) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
+        content,
         embeds: [embed]
       })
     });
   } catch (error) {
     console.error('Error sending Discord notification:', error);
+  }
+}
+
+// Helper functions for Discord notifications
+function getPriorityEmoji(category) {
+  switch (category.toLowerCase()) {
+    case 'player':
+      return '🚨'; // High priority
+    case 'technical':
+      return '⚠️'; // Medium priority
+    case 'gameplay':
+      return '📝'; // Normal priority
+    default:
+      return '❓'; // Unknown priority
+  }
+}
+
+function getPriorityText(category) {
+  switch (category.toLowerCase()) {
+    case 'player':
+      return 'HIGH - Player Report';
+    case 'technical':
+      return 'MEDIUM - Technical Issue';
+    case 'gameplay':
+      return 'NORMAL - Gameplay Issue';
+    default:
+      return 'NORMAL - Other Issue';
+  }
+}
+
+function getStatusEmoji(status) {
+  switch (status.toLowerCase()) {
+    case 'open':
+      return '🟢';
+    case 'in_progress':
+      return '🟡';
+    case 'closed':
+      return '🔴';
+    default:
+      return '⚪';
+  }
+}
+
+function getStatusMention(status) {
+  switch (status.toLowerCase()) {
+    case 'open':
+      return DISCORD_ADMIN_ROLE_ID ? `<@&${DISCORD_ADMIN_ROLE_ID}> New ticket opened!` : '';
+    case 'in_progress':
+      return DISCORD_MOD_ROLE_ID ? `<@&${DISCORD_MOD_ROLE_ID}> Ticket in progress` : '';
+    case 'closed':
+      return '';
+    default:
+      return '';
   }
 }
 
