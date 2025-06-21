@@ -7,8 +7,8 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 require('dotenv').config();
 
 // PayPal configuration
-const PAYPAL_CLIENT_ID = 'AdP8TYJ6YeqLSiNGtXm4fmwnLGgnuE93kdCkvTRUXdvez7L_albSJH096X504H41jDINA5CORfBfT5mV';
-const PAYPAL_CLIENT_SECRET = 'EPq9GHLTVwazu9djsuw1fkMyLrzXZOZEBqURJP5zPuIMjfbhxaL7anCR1zjkKTEkgB3wLAilQbz4ITrn';
+const PAYPAL_CLIENT_ID = 'AZLUOzUrxbmSfcgkUnygNj1R2VLv7h09GlS-GW-0aESQNcxald90D58h4j25bUP_NLDUkCVGJ_cLuoV1';
+const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET; // Make sure to add this to your .env file
 const PAYPAL_API = 'https://api-m.paypal.com';
 
 const app = express();
@@ -227,6 +227,28 @@ db.connect((err) => {
               console.error('Error creating transactions table:', err);
             } else {
               console.log('Transactions table ready');
+            }
+          });
+
+          // Create subscriptions table
+          const createSubscriptionsTable = `
+            CREATE TABLE IF NOT EXISTS subscriptions (
+              id INT AUTO_INCREMENT PRIMARY KEY,
+              subscription_id VARCHAR(255) NOT NULL,
+              user_id INT,
+              tier VARCHAR(50) NOT NULL,
+              status ENUM('active', 'cancelled', 'expired') DEFAULT 'active',
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              expires_at TIMESTAMP,
+              FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+          `;
+          
+          db.query(createSubscriptionsTable, (err) => {
+            if (err) {
+              console.error('Error creating subscriptions table:', err);
+            } else {
+              console.log('Subscriptions table ready');
             }
           });
         }
@@ -852,6 +874,66 @@ app.post('/api/process-payment', async (req, res) => {
   } catch (error) {
     console.error('Payment processing error:', error);
     res.status(500).json({ success: false, message: 'Error processing payment' });
+  }
+});
+
+// Process PayPal subscription
+app.post('/api/process-subscription', async (req, res) => {
+  try {
+    const { subscriptionID, tier } = req.body;
+
+    // Verify the subscription with PayPal
+    const response = await fetch(`${PAYPAL_API}/v1/billing/subscriptions/${subscriptionID}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Basic ${Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const data = await response.json();
+
+    if (data.status === 'ACTIVE') {
+      // Save the subscription to database
+      await db.promise().query(
+        'INSERT INTO subscriptions (subscription_id, tier, status) VALUES (?, ?, ?)',
+        [subscriptionID, tier, 'active']
+      );
+
+      res.json({ success: true, message: 'Subscription processed successfully' });
+    } else {
+      res.status(400).json({ success: false, message: 'Subscription activation failed' });
+    }
+  } catch (error) {
+    console.error('Subscription processing error:', error);
+    res.status(500).json({ success: false, message: 'Error processing subscription' });
+  }
+});
+
+// Webhook to handle subscription status updates
+app.post('/api/subscription-webhook', async (req, res) => {
+  try {
+    const event = req.body;
+
+    // Verify webhook authenticity with PayPal
+    // Implementation depends on PayPal webhook verification method
+
+    if (event.event_type === 'BILLING.SUBSCRIPTION.CANCELLED') {
+      await db.promise().query(
+        'UPDATE subscriptions SET status = ? WHERE subscription_id = ?',
+        ['cancelled', event.resource.id]
+      );
+    } else if (event.event_type === 'BILLING.SUBSCRIPTION.EXPIRED') {
+      await db.promise().query(
+        'UPDATE subscriptions SET status = ? WHERE subscription_id = ?',
+        ['expired', event.resource.id]
+      );
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Webhook processing error:', error);
+    res.status(500).json({ success: false });
   }
 });
 
