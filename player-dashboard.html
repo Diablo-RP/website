@@ -95,6 +95,62 @@
       .vip-coins i {
         margin-right: 8px;
       }
+      .character-card {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      }
+      .character-card h3 {
+        font-size: 1.8em;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      .character-card p {
+        font-size: 1.4em;
+        color: #666;
+      }
+      .money-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .money-grid div {
+        margin: 10px;
+        padding: 20px;
+        background-color: #f7f7f7;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        text-align: center;
+      }
+      .money-grid div h5 {
+        font-size: 1.4em;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      .money-grid div p {
+        font-size: 1.8em;
+        font-weight: bold;
+        color: #666;
+      }
+      .vip-coins-display {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(139,0,0,0.9);
+        color: #ffd700;
+        padding: 15px 25px;
+        border-radius: 10px;
+        font-size: 1.8em;
+        font-weight: bold;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        z-index: 1000;
+        letter-spacing: 1px;
+      }
+      .vip-coins-display i {
+        margin-right: 8px;
+      }
     </style>
   </head>
 
@@ -139,90 +195,74 @@
     </header>
     <!-- ***** Header Area End ***** -->
 
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-12">
-          <div class="page-content">
-            <!-- ***** Player Info Start ***** -->
-            <div class="row">
-              <div class="col-lg-12">
-                <div class="main-profile">
-                  <div class="row">
-                    <div class="col-lg-12">
-                      <h1 class="dashboard-title">Player Dashboard</h1>
-                      <div class="player-info">
-                        <div class="player-header">
-                          <div class="player-name">
-                            <span id="playerName">Loading...</span>
-                          </div>
-                          <div class="citizen-id">
-                            <i class="fa fa-id-card"></i> Citizen ID: <span id="citizenId">Loading...</span>
-                          </div>
-                        </div>
-                        <div class="row">
-                          <div class="col-md-4">
-                            <div class="money-box">
-                              <div class="money-label">Cash</div>
-                              <div class="money-value">$<span id="cash">Loading...</span></div>
-                            </div>
-                          </div>
-                          <div class="col-md-4">
-                            <div class="money-box">
-                              <div class="money-label">Valentine Bank</div>
-                              <div class="money-value">$<span id="valBank">Loading...</span></div>
-                            </div>
-                          </div>
-                          <div class="col-md-4">
-                            <div class="money-box">
-                              <div class="money-label">Armadillo Bank</div>
-                              <div class="money-value">$<span id="armBank">Loading...</span></div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="row mt-3">
-                          <div class="col-md-4">
-                            <div class="money-box">
-                              <div class="money-label">Rhodes Bank</div>
-                              <div class="money-value">$<span id="rhoBank">Loading...</span></div>
-                            </div>
-                          </div>
-                          <div class="col-md-4">
-                            <div class="money-box">
-                              <div class="money-label">Blackwater Bank</div>
-                              <div class="money-value">$<span id="blkBank">Loading...</span></div>
-                            </div>
-                          </div>
-                          <div class="col-md-4">
-                            <div class="money-box">
-                              <div class="money-label">Bank</div>
-                              <div class="money-value">$<span id="bank">Loading...</span></div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="row mt-3">
-                          <div class="col-md-4">
-                            <div class="money-box blood-money">
-                              <div class="money-label">Blood Money</div>
-                              <div class="money-value">$<span id="bloodMoney">Loading...</span></div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- ***** Player Info End ***** -->
-          </div>
-        </div>
+    <div class="container mt-5">
+      <h2 class="text-center mb-4">Player Dashboard</h2>
+      <div id="characters-container">
+        <!-- Characters will be dynamically added here -->
       </div>
     </div>
 
-    <!-- VIP Coins Display -->
-    <div class="vip-coins">
-      <i class="fa fa-crown"></i>VIP Coins: <span id="vipCoins">0</span>
-    </div>
+    <script>
+      $(document).ready(function() {
+        // Fetch player info
+        $.get('/api/player-info')
+          .done(function(characters) {
+            const container = $('#characters-container');
+            
+            characters.forEach(character => {
+              const characterDiv = $('<div>').addClass('character-card mb-4 p-4 border rounded');
+              
+              // Character name section
+              characterDiv.append(`
+                <h3 class="mb-3">${character.firstName} ${character.lastName || ''}</h3>
+                <p class="text-muted">Citizen ID: ${character.citizenId}</p>
+              `);
+
+              // Money grid
+              const moneyGrid = $('<div>').addClass('row g-3 mb-4');
+              
+              // Add money boxes
+              const moneyBoxes = [
+                { label: 'Cash', value: character.cash },
+                { label: 'Valentine Bank', value: character.valBank },
+                { label: 'Armadillo Bank', value: character.armBank },
+                { label: 'Rhodes Bank', value: character.rhoBank },
+                { label: 'Blackwater Bank', value: character.blkBank },
+                { label: 'Bank', value: character.bank },
+                { label: 'Blood Money', value: character.bloodMoney }
+              ];
+
+              moneyBoxes.forEach(box => {
+                moneyGrid.append(`
+                  <div class="col-md-4 col-lg-3">
+                    <div class="p-3 border rounded text-center">
+                      <h5>${box.label}</h5>
+                      <p class="mb-0">$${box.value.toFixed(2)}</p>
+                    </div>
+                  </div>
+                `);
+              });
+
+              characterDiv.append(moneyGrid);
+              container.append(characterDiv);
+            });
+
+            // Add VIP coins display (same for all characters since it's per license)
+            if (characters.length > 0) {
+              $('body').append(`
+                <div class="vip-coins-display">
+                  <i class="fas fa-crown"></i>
+                  <span>${characters[0].vipCoins}</span>
+                </div>
+              `);
+            }
+          })
+          .fail(function(jqXHR, textStatus, errorThrown) {
+            console.error('Error fetching player info:', errorThrown);
+            alert('Error fetching player information');
+          });
+      });
+    </script>
 
     <footer>
       <div class="container">
@@ -237,66 +277,5 @@
     <script src="vendor/jquery/jquery.min.js"></script>
     <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
     <script src="assets/js/custom.js"></script>
-    <script>
-      function formatMoney(amount) {
-        return amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      }
-
-      window.onload = async function() {
-        try {
-          const response = await fetch('http://localhost:3001/api/player-info', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            console.log('Player data:', data);
-            
-            // Update player name
-            const displayName = data.firstName + (data.lastName ? ` ${data.lastName}` : '');
-            document.getElementById('playerName').textContent = displayName || 'Unknown';
-            
-            // Update other fields
-            document.getElementById('citizenId').textContent = data.citizenId || 'Not found';
-            document.getElementById('vipCoins').textContent = data.vipCoins.toLocaleString();
-            document.getElementById('cash').textContent = formatMoney(data.cash);
-            document.getElementById('valBank').textContent = formatMoney(data.valBank);
-            document.getElementById('armBank').textContent = formatMoney(data.armBank);
-            document.getElementById('rhoBank').textContent = formatMoney(data.rhoBank);
-            document.getElementById('blkBank').textContent = formatMoney(data.blkBank);
-            document.getElementById('bank').textContent = formatMoney(data.bank);
-            document.getElementById('bloodMoney').textContent = formatMoney(data.bloodMoney);
-          } else {
-            const error = await response.json();
-            console.error('Error:', error);
-            document.getElementById('playerName').textContent = 'Error loading data';
-            document.getElementById('citizenId').textContent = 'Error loading data';
-            document.getElementById('vipCoins').textContent = '0';
-            document.getElementById('cash').textContent = 'Error';
-            document.getElementById('valBank').textContent = 'Error';
-            document.getElementById('armBank').textContent = 'Error';
-            document.getElementById('rhoBank').textContent = 'Error';
-            document.getElementById('blkBank').textContent = 'Error';
-            document.getElementById('bank').textContent = 'Error';
-            document.getElementById('bloodMoney').textContent = 'Error';
-          }
-        } catch (error) {
-          console.error('Error:', error);
-          document.getElementById('playerName').textContent = 'Error loading data';
-          document.getElementById('citizenId').textContent = 'Error loading data';
-          document.getElementById('vipCoins').textContent = '0';
-          document.getElementById('cash').textContent = 'Error';
-          document.getElementById('valBank').textContent = 'Error';
-          document.getElementById('armBank').textContent = 'Error';
-          document.getElementById('rhoBank').textContent = 'Error';
-          document.getElementById('blkBank').textContent = 'Error';
-          document.getElementById('bank').textContent = 'Error';
-          document.getElementById('bloodMoney').textContent = 'Error';
-        }
-      };
-    </script>
   </body>
 </html>

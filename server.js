@@ -144,24 +144,25 @@ app.get('/api/player-info', async (req, res) => {
     const [columns] = await db.promise().query('DESCRIBE cas_vip_coin');
     console.log('VIP Coins table structure:', columns);
 
-    // Get all characters for the steam ID with VIP coins
+    // Get all characters for the player's license
     const query = 'SELECT p.citizenid, p.money, p.charinfo, p.license, COALESCE(v.amount, 0) as vip_coins ' +
                  'FROM players p ' +
                  'LEFT JOIN cas_vip_coin v ON v.identifier = p.license ' +
-                 'ORDER BY p.citizenid';
+                 'WHERE p.license = (SELECT license FROM players LIMIT 1)'; // Get all chars with same license
     console.log('Executing query:', query);
     
     const [players] = await db.promise().query(query);
     console.log('Query result:', players);
     
     if (players.length === 0) {
-      return res.status(404).json({ error: 'No players found' });
+      return res.status(404).json({ error: 'No characters found' });
     }
     
-    // Map all characters to their data
+    // Map all characters to response format
     const characters = players.map(player => {
       const moneyData = JSON.parse(player.money);
       const charInfo = JSON.parse(player.charinfo);
+      console.log('Character Info:', charInfo);
       
       return {
         citizenId: player.citizenid,
