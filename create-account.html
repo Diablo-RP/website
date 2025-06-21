@@ -111,7 +111,7 @@
   <footer>
     <div class="container">
       <div class="col-lg-12">
-        <p>Copyright © 2024 DiabloCountyRP. All rights reserved.</p>
+        <p>Copyright &copy; 2024 DiabloCountyRP. All rights reserved.</p>
       </div>
     </div>
   </footer>
@@ -132,12 +132,19 @@
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
       
+      // Validate inputs
+      if (!steamId || !password || !confirmPassword) {
+        alert('Please fill in all fields');
+        return;
+      }
+      
       if (password !== confirmPassword) {
         alert('Passwords do not match');
         return;
       }
       
       try {
+        console.log('Sending registration request...');
         const response = await fetch('http://localhost:3001/api/register', {
           method: 'POST',
           headers: {
@@ -146,17 +153,19 @@
           body: JSON.stringify({ steamId, password })
         });
         
+        console.log('Response status:', response.status);
         const data = await response.json();
+        console.log('Response data:', data);
         
         if (response.ok) {
-          alert(`Account created successfully! Your Character ID is: ${data.characterId}\nPlease save this ID as you will need it to sign in.`);
+          alert(`Account created successfully!\nYour Character ID is: ${data.characterId}\nPlease save this ID as you will need it to sign in.`);
           window.location.href = 'signin.html';
         } else {
           alert(data.error || 'Error creating account');
         }
       } catch (error) {
         console.error('Error:', error);
-        alert('Error creating account');
+        alert('Error creating account. Please check the console for details.');
       }
     }
   </script>

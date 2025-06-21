@@ -52,16 +52,23 @@ db.connect((err) => {
 
 // Register new user
 app.post('/api/register', async (req, res) => {
+  console.log('Received registration request:', req.body);
   const { steamId, password } = req.body;
+  
+  if (!steamId || !password) {
+    console.error('Missing required fields');
+    return res.status(400).json({ error: 'Steam ID and password are required' });
+  }
   
   try {
     // Check if steam ID already exists
-    const [existingUser] = await db.promise().query(
+    const [existingUsers] = await db.promise().query(
       'SELECT * FROM users WHERE steam_id = ?',
       [steamId]
     );
     
-    if (existingUser.length > 0) {
+    if (existingUsers.length > 0) {
+      console.log('Steam ID already exists:', steamId);
       return res.status(400).json({ error: 'Steam ID already registered' });
     }
     
@@ -77,10 +84,11 @@ app.post('/api/register', async (req, res) => {
       [steamId, hashedPassword, characterId]
     );
     
-    res.json({ message: 'Account created successfully', characterId });
+    console.log('Account created successfully for Steam ID:', steamId);
+    res.status(200).json({ message: 'Account created successfully', characterId });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ error: 'Error creating account' });
+    res.status(500).json({ error: 'Error creating account: ' + error.message });
   }
 });
 
