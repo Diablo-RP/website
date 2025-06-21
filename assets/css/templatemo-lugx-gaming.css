@@ -25,7 +25,7 @@ Table of contents
 font & reset css
 --------------------------------------------- 
 */
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900");
+
 /* 
 ---------------------------------------------
 reset
@@ -77,7 +77,7 @@ header, nav, section, article, aside, footer, hgroup {
 }
 
 html, body {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'DiabloFont';
   -ms-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -88,7 +88,7 @@ a {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  color: #1e1e1e;
+  color: var(--burnt-gold);
   margin-top: 0px;
   margin-bottom: 0px;
   font-weight: 700;
@@ -116,7 +116,7 @@ Global Styles
 */
 html,
 body {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'DiabloFont';
 }
 
 ::selection {
@@ -573,7 +573,7 @@ Header Style
     line-height: 50px;
     height: 50px;
     font-weight: 400;
-    color: #1e1e1e;
+    color: var(--burnt-gold);
     background-color: #fff;
      border-radius: 0px 0px 25px 25px;
   }
@@ -849,7 +849,7 @@ Trending Style
 }
 
 .trending .item  {
-  background-color: #eeeeee;
+  background-color: var(--ash-black);
   position: relative;
   overflow: hidden;
   border-radius: 25px;
@@ -908,7 +908,7 @@ Trending Style
   line-height: 40px;
   width: 40px;
   height: 40px;
-  background-color: #ee626b;
+  background-color: var(--blood-red);
   color: #fff;
   border-radius: 50%;
   right: 25px;
@@ -923,290 +923,6 @@ Trending Style
 .trending .item:hover .down-content a {
   background-color: #aea235;
 }
-
-
-/* 
----------------------------------------------
-Most Played Style
---------------------------------------------- 
-*/
-
-.most-played {
-  background-color: #f7f7f7;
-  padding: 100px 0px;
-  border-radius: 150px;
-}
-
-.most-played .main-button {
-  margin-top: 32px;
-  text-align: right;
-}
-
-.most-played .item  {
-  background-color: #fff;
-  position: relative;
-  border-radius: 25px;
-  text-align: center;
-  margin-bottom: 40px;
-}
-
-.most-played .item .thumb {
-  position: relative;
-  border-radius: 25px;
-  overflow: hidden;
-}
-
-.most-played .item .down-content {
-  padding: 20px 15px 40px 15px;
-}
-
-.most-played .item .down-content span.category {
-  font-size: 14px;
-  color: #7a7a7a;
-  margin-bottom: 5px;
-  display: inline-block;
-}
-
-.most-played .item .down-content h4 {
-  font-size: 17px;
-  font-weight: 600;
-  transition: all .3s;
-}
-
-.most-played .item .down-content a {
-  position: absolute;
-  display: inline-block;
-  text-align: center;
-  line-height: 40px;
-  height: 40px;
-  padding: 0px 15px;
-  background-color: #ee626b;
-  color: #fff;
-  border-radius: 20px;
-  font-size: 15px;
-  text-transform: uppercase;
-  font-weight: 600;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: -20px;
-  transition: all .3s;
-}
-
-.most-played .item:hover .down-content h4 {
-  color: #aea235;
-}
-
-.most-played .item:hover .down-content a {
-  background-color: #aea235;
-}
-
-
-/* 
----------------------------------------------
-Categories Style
---------------------------------------------- 
-*/
-
-.categories .main-button {
-  margin-top: 30px;
-}
-
-.categories .item  {
-  background-color: #0071f8;
-  position: relative;
-  border-radius: 25px;
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.categories .item .thumb {
-  position: relative;
-  border-radius: 25px;
-  overflow: hidden;
-}
-
-.categories .item h4 {
-  font-size: 17px;
-  font-weight: 600;
-  color: #fff;
-  padding: 22px;
-  margin-bottom: 0px;
-}
-
-/* 
----------------------------------------------
-CTA Style
---------------------------------------------- 
-*/
-
-.cta {
-  position: relative;
-}
-
-.cta::after {
-  background-image: url(../images/cta-bg.jpg);
-  max-width: 550px;
-  max-height: 510px;
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  content: '';
-  border-radius: 25px;
-  left: 50%;
-  transform: translateX(-275px);
-  top: 0;
-  z-index: -1;
-}
-
-.cta .shop {
-  margin-top: 80px;
-  background-color: #f7f7f7;
-  border-radius: 25px;
-  padding: 80px;
-}
-
-.cta .shop .section-heading {
-  margin-right: 30px;
-  margin-bottom: 50px;
-}
-
-.cta .shop p {
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.cta .shop .main-button {
-  margin-top: 50px;
-}
-
-.cta .subscribe {
-  background-color: #f7f7f7;
-  border-radius: 25px;
-  padding: 80px 60px;
-}
-
-.cta .subscribe .section-heading {
-  margin-bottom: 50px;
-}
-
-.cta .subscribe form {
-  position: relative;
-  max-width: 100%;
-}
-
-.cta .subscribe form input {
-  max-width: 100%;
-  width: 100%;
-  height: 50px;
-  outline: none;
-  border-radius: 25px;
-  background-color: #fff;
-  border: none;
-  padding: 0px 25px;
-  font-size: 14px;
-  color: #7a7a7a;
-}
-
-.cta .subscribe form button {
-  display: inline-block;
-  height: 50px;
-  line-height: 50px;
-  background-color: #ee626b;
-  color: #fff;
-  font-size: 15px;
-  text-transform: uppercase;
-  font-weight: 500;
-  padding: 0px 25px;
-  border: none;
-  border-radius: 25px;
-  position: absolute;
-  right: 0;
-  top: 0;
-  transition: all .3s;
-}
-
-.cta .subscribe form button:hover {
-  background-color: #aea235;
-}
-
-
-/* 
----------------------------------------------
-Footer Style
---------------------------------------------- 
-*/
-
-footer {
-  margin-top: 150px;
-  background-color: #0071f8;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-image: url(../images/footer-bg.jpg);
-  min-height: 150px;
-  border-radius: 150px 150px 0px 0px;
-}
-
-footer p {
-  text-align: center;
-  line-height: 90px;
-  color: #fff;
-  font-size: 16px;
-  font-weight: 400;
-}
-
-footer p a {
-  color: #fff;
-  transition: all .3s;
-  position: relative;
-  z-index: 3;
-}
-
-footer p a:hover {
-  opacity: 0.75;
-}
-
-
-/* 
----------------------------------------------
-Page Header Style
---------------------------------------------- 
-*/
-
-.page-heading {
-  background-image: url(../images/page-heading-bg.jpg);
-  border-radius: 0px 0px 150px 150px;
-  background-position: center bottom;
-  background-repeat: no-repeat;
-  background-size: cover;
-  padding: 200px 0px 100px 0px;
-  text-align: center;
-}
-
-.page-heading span {
-  display: inline-block;
-  font-size: 16px;
-  color: #fff;
-}
-
-.page-heading span a {
-  color: #fff;
-}
-
-.page-heading h3 {
-  font-size: 48px;
-  text-transform: uppercase;
-  color: #fff;
-  margin-top: 20px;
-  position: relative;
-  margin-bottom: 20px;
-}
-
-
-/* 
----------------------------------------------
-Shop Page Style
---------------------------------------------- 
-*/
 
 .trending ul.trending-filter {
   list-style: none;
@@ -1225,7 +941,7 @@ Shop Page Style
   font-size: 15px;
   text-transform: uppercase;
   font-weight: 600;
-  color: #1e1e1e;
+  color: var(--burnt-gold);
   background-color: #eee;
   padding: 8px 20px;
   border-radius: 25px;
@@ -1233,7 +949,7 @@ Shop Page Style
 }
 
 .trending ul.trending-filter li a.is_active {
-  background-color: #ee626b;
+  background-color: var(--blood-red);
   color: #fff;
 }
 
@@ -1246,7 +962,7 @@ Shop Page Style
 }
 
 .trending-box .item  {
-  background-color: #eeeeee;
+  background-color: var(--ash-black);
   position: relative;
   overflow: hidden;
   border-radius: 25px;
@@ -1305,7 +1021,7 @@ Shop Page Style
   line-height: 40px;
   width: 40px;
   height: 40px;
-  background-color: #ee626b;
+  background-color: var(--blood-red);
   color: #fff;
   border-radius: 50%;
   right: 25px;
@@ -1340,7 +1056,7 @@ Shop Page Style
   line-height: 40px;
   text-align: center;
   background-color: #eee;
-  color: #1e1e1e;
+  color: var(--burnt-gold);
   font-size: 15px;
   font-weight: 600;
   border-radius: 50%;
@@ -1419,7 +1135,7 @@ Single Page Style
   display: inline-block;
   height: 50px;
   line-height: 50px;
-  background-color: #ee626b;
+  background-color: var(--blood-red);
   color: #fff;
   font-size: 15px;
   text-transform: uppercase;
@@ -1472,7 +1188,7 @@ Single Page Style
   background-color: transparent !important;
   font-size: 20px;
   font-weight: 600;
-  color: #1e1e1e;
+  color: var(--burnt-gold);
   padding: 0px;
 }
 
@@ -1582,7 +1298,7 @@ Contact PAge Style
   display: inline-block;
   height: 50px;
   line-height: 50px;
-  background-color: #ee626b;
+  background-color: var(--blood-red);
   color: #fff;
   font-size: 15px;
   text-transform: uppercase;

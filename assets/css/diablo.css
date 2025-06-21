@@ -1,0 +1,46 @@
+@font-face {
+    font-family: 'DiabloFont';
+    src: url('https://db.onlinewebfonts.com/t/97c4b25dc74e0ab045154e75a8fdd69d.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+:root {
+    --ash-black: #1A1A1A;
+    --blood-red: #8B0000;
+    --burnt-gold: #D4AF37;
+    --dark-gold: #8B7355;
+    --light-gold: #FFD700;
+    --text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Apply DiabloFont to all headings */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'DiabloFont' !important;
+    color: var(--burnt-gold) !important;
+    text-shadow: var(--text-shadow) !important;
+}
+
+/* Apply DiabloFont to navigation */
+.header-area .main-nav .nav li a {
+    font-family: 'DiabloFont' !important;
+    color: var(--burnt-gold) !important;
+}
+
+/* Style buttons */
+.main-button a {
+    font-family: 'DiabloFont' !important;
+    background-color: var(--blood-red) !important;
+    color: var(--burnt-gold) !important;
+}
+
+/* Style section headings */
+.section-heading h6 {
+    font-family: 'DiabloFont' !important;
+    color: var(--dark-gold) !important;
+}
+
+.section-heading h4 {
+    font-family: 'DiabloFont' !important;
+    color: var(--burnt-gold) !important;
+}
