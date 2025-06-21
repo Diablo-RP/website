@@ -505,14 +505,17 @@ app.get('/api/player-info', authenticateUser, async (req, res) => {
 
     // Get player info directly from players table
     const query = `
-      SELECT p.citizenid, p.money, p.charinfo, COALESCE(v.amount, 0) as vip_coins 
+      SELECT p.citizenid, p.money, p.charinfo, p.license,
+             COALESCE(vip.amount, 0) as vip_coins,
+             COALESCE(dc.amount, 0) as diablo_coins
       FROM players p 
-      LEFT JOIN cas_vip_coin v ON v.identifier = p.citizenid 
-      LIMIT 1`;
+      LEFT JOIN cas_vip_coin vip ON vip.identifier = p.citizenid AND vip.type = 'vip'
+      LEFT JOIN cas_vip_coin dc ON dc.identifier = p.citizenid AND dc.type = 'diablo'
+      WHERE p.citizenid = ?`;
     
     console.log('Executing query:', query);
     
-    const [players] = await db.promise().query(query);
+    const [players] = await db.promise().query(query, [req.headers['character-id']]);
     console.log('Query result:', players);
 
     if (players.length === 0) {
@@ -533,13 +536,14 @@ app.get('/api/player-info', authenticateUser, async (req, res) => {
         citizenId: player.citizenid,
         firstName: charInfo.firstname || '',
         lastName: charInfo.lastname || '',
+        license: player.license,
         vipCoins: parseInt(player.vip_coins) || 0,
+        diabloCoins: parseInt(player.diablo_coins) || 0,
         cash: parseFloat(moneyData.cash) || 0,
         valBank: parseFloat(moneyData.valbank) || 0,
         armBank: parseFloat(moneyData.armbank) || 0,
         rhoBank: parseFloat(moneyData.rhobank) || 0,
         blkBank: parseFloat(moneyData.blkbank) || 0,
-        bank: parseFloat(moneyData.bank) || 0,
         bloodMoney: parseFloat(moneyData.bloodmoney) || 0
       });
     } catch (parseError) {

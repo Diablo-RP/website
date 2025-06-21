@@ -285,6 +285,31 @@
         box-shadow: 0 2px 10px rgba(0,0,0,0.3);
       }
 
+      .diablo-coins {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: linear-gradient(45deg, #8B0000, #2C2C2C);
+        border: 2px solid #D4AF37;
+        padding: 0.8rem 1.5rem;
+        border-radius: 25px;
+        color: #8B7355;
+        font-size: 1.2em;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        z-index: 1000;
+      }
+
+      .coin-icon {
+        color: #D4AF37;
+      }
+
+      .coin-value {
+        color: #D4AF37;
+      }
+
       .vip-coins i {
         color: #D4AF37;
       }
@@ -491,8 +516,18 @@
             if (character.vipCoins) {
               $('body').append(`
                 <div class="vip-coins">
-                  <i class="fa fa-crown"></i>
-                  <span>${character.vipCoins.toLocaleString()} VIP Coins</span>
+                  <i class="fa fa-crown coin-icon"></i>
+                  <span class="coin-value">${character.vipCoins.toLocaleString()} VIP Coins</span>
+                </div>
+              `);
+            }
+
+            // Add Diablo coins display
+            if (character.diabloCoins !== undefined) {
+              $('body').append(`
+                <div class="diablo-coins">
+                  <i class="fa fa-fire coin-icon"></i>
+                  <span class="coin-value">${character.diabloCoins.toLocaleString()} Diablo Coins</span>
                 </div>
               `);
             }
