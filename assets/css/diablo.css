@@ -80,6 +80,87 @@ body, html {
     border: 1px solid var(--burnt-gold);
 }
 
+/* Join page styling */
+.page-heading.header-text {
+    background-color: var(--ash-black);
+    padding: 80px 0;
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.page-heading.header-text h3 {
+    color: var(--blood-red);
+    font-size: 1.5em;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+}
+
+.page-heading.header-text h2 {
+    color: var(--burnt-gold);
+    font-size: 3em;
+    margin-bottom: 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.more-info {
+    padding: 60px 0;
+}
+
+.more-info .tabs-content {
+    background-color: var(--ash-black);
+    border: 1px solid var(--burnt-gold);
+    padding: 40px;
+    border-radius: 25px;
+    margin-bottom: 60px;
+}
+
+.more-info .nav-tabs {
+    border-bottom: 1px solid var(--burnt-gold);
+    margin-bottom: 30px;
+}
+
+.more-info .nav-tabs .nav-link {
+    color: var(--burnt-gold);
+    font-size: 1.2em;
+    padding: 15px 30px;
+    border: none;
+    border-bottom: 2px solid transparent;
+}
+
+.more-info .nav-tabs .nav-link.active {
+    background: transparent;
+    color: var(--blood-red);
+    border-bottom: 2px solid var(--blood-red);
+}
+
+.more-info .tab-content h2 {
+    color: var(--burnt-gold);
+    font-size: 2em;
+    margin-bottom: 20px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.more-info .tab-content p {
+    color: var(--burnt-gold);
+    font-size: 1.1em;
+    line-height: 1.8;
+    margin-bottom: 30px;
+}
+
+.more-info .btn-primary {
+    background-color: var(--blood-red);
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.1em;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+}
+
+.more-info .btn-primary:hover {
+    background-color: var(--burnt-gold);
+    transform: translateY(-2px);
+}
+
 /* Style scrollbar */
 ::-webkit-scrollbar {
     width: 10px;
