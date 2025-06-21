@@ -501,30 +501,49 @@ app.post('/api/login', async (req, res) => {
 app.get('/api/player-info', authenticateUser, async (req, res) => {
   try {
     console.log('Player info request received');
-    console.log('Character ID:', req.headers['character-id']);
+    const characterId = req.headers['character-id'];
+    console.log('Character ID:', characterId);
 
-    // Get player info directly from players table
-    const query = `
-      SELECT p.citizenid, p.money, p.charinfo, p.license,
-             COALESCE(vip.amount, 0) as vip_coins,
-             COALESCE(dc.amount, 0) as diablo_coins
+    // Try different formats of the character ID
+    const plainId = characterId.replace('DC-', '');
+    const dcId = 'DC-' + plainId;
+    console.log('Trying IDs:', { plainId, dcId });
+
+    // Debug query to see what's in the players table
+    const debugQuery = `SELECT citizenid FROM players LIMIT 5`;
+    const [debugResults] = await db.promise().query(debugQuery);
+    console.log('Sample citizenids in players table:', debugResults);
+
+    // First check if the player exists - try all possible formats
+    const playerQuery = `
+      SELECT p.citizenid, p.money, p.charinfo, p.license
       FROM players p 
-      LEFT JOIN cas_vip_coin vip ON vip.identifier = p.citizenid AND vip.type = 'vip'
-      LEFT JOIN cas_vip_coin dc ON dc.identifier = p.citizenid AND dc.type = 'diablo'
-      WHERE p.citizenid = ?`;
+      WHERE p.citizenid = ?
+         OR p.citizenid = ?
+         OR p.citizenid = LOWER(?)
+         OR p.citizenid = LOWER(?)`;
     
-    console.log('Executing query:', query);
+    console.log('Executing player query:', playerQuery);
+    const [players] = await db.promise().query(playerQuery, [characterId, plainId, characterId, plainId]);
+    console.log('Player query results:', players);
     
-    const [players] = await db.promise().query(query, [req.headers['character-id']]);
-    console.log('Query result:', players);
-
     if (players.length === 0) {
       console.log('No player found');
       return res.status(404).json({ error: 'Player not found' });
     }
 
     const player = players[0];
-    console.log('Raw player data:', player);
+    const actualCitizenId = player.citizenid;
+    console.log('Found player with citizenid:', actualCitizenId);
+
+    // Get VIP coins - try both formats of ID
+    const vipQuery = `
+      SELECT amount as vip_coins
+      FROM cas_vip_coin
+      WHERE identifier = ? OR identifier = ?`;
+    
+    console.log('Executing VIP query:', vipQuery);
+    const [vipResults] = await db.promise().query(vipQuery, [actualCitizenId, characterId]);
     
     try {
       const moneyData = JSON.parse(player.money || '{}');
@@ -537,8 +556,8 @@ app.get('/api/player-info', authenticateUser, async (req, res) => {
         firstName: charInfo.firstname || '',
         lastName: charInfo.lastname || '',
         license: player.license,
-        vipCoins: parseInt(player.vip_coins) || 0,
-        diabloCoins: parseInt(player.diablo_coins) || 0,
+        vipCoins: vipResults.length > 0 ? parseInt(vipResults[0].vip_coins) : 0,
+        diabloCoins: 0, // We'll add this back once we confirm VIP coins work
         cash: parseFloat(moneyData.cash) || 0,
         valBank: parseFloat(moneyData.valbank) || 0,
         armBank: parseFloat(moneyData.armbank) || 0,
@@ -552,6 +571,7 @@ app.get('/api/player-info', authenticateUser, async (req, res) => {
     }
   } catch (error) {
     console.error('Error fetching player info:', error);
+    console.error('Full error details:', error.stack);
     res.status(500).json({ error: 'Failed to fetch player info', details: error.message });
   }
 });
