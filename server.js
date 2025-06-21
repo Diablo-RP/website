@@ -125,7 +125,7 @@ app.post('/api/login', async (req, res) => {
 // Get player info
 app.get('/api/player-info', async (req, res) => {
   try {
-    // For demo, return the last created user
+    // For demo, return the last created user dfc
     const [users] = await db.promise().query(
       'SELECT steam_id, character_id, created_at FROM users ORDER BY created_at DESC LIMIT 1'
     );
