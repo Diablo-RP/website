@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Diablo County RP - Sign In</title>
+    <title>Diablo County RP - Create Account</title>
     <!-- Bootstrap core CSS -->
     <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <!-- Additional CSS Files -->
@@ -53,7 +53,7 @@
                   <li><a href="newStarterGuide.html">Starter Guides</a></li>
                 </ul>
               </li>
-              <li><a href="signin.html" class="active">Sign In</a></li>
+              <li><a href="signin.html">Sign In</a></li>
             </ul>
             <a class='menu-trigger'>
               <span>Menu</span>
@@ -70,8 +70,8 @@
     <div class="container">
       <div class="row">
         <div class="col-lg-12">
-          <h3>Welcome Back</h3>
-          <h2>Sign In to Diablo County</h2>
+          <h3>Welcome to Diablo County</h3>
+          <h2>Create Your Account</h2>
         </div>
       </div>
     </div>
@@ -83,19 +83,23 @@
         <div class="col-lg-6">
           <div class="left-text">
             <div class="section-heading-app">
-              <h2>Sign In</h2>
+              <h2>Create Account</h2>
             </div>
-            <form id="signin-form" class="text-center">
+            <form id="create-account-form" class="text-center">
               <div class="form-group mb-4">
-                <input type="text" class="form-control" id="characterId" placeholder="Character ID" required>
+                <input type="text" class="form-control" id="steamId" placeholder="Steam ID" required>
+                <small class="form-text text-muted">Enter your Steam64 ID</small>
               </div>
               <div class="form-group mb-4">
                 <input type="password" class="form-control" id="password" placeholder="Password" required>
+                <small class="form-text text-muted">Must be at least 8 characters</small>
               </div>
-              <button type="submit" class="btn btn-primary">Sign In</button>
+              <div class="form-group mb-4">
+                <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm Password" required>
+              </div>
+              <button type="submit" class="btn btn-primary">Create Account</button>
               <div class="mt-4">
-                <p>Create an account <a href="create-account.html">Create One</a></p>
-                <p><a href="#">Forgot Character ID or Password?</a></p>
+                <p>Already have an account? <a href="signin.html">Sign In</a></p>
               </div>
             </form>
           </div>
