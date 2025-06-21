@@ -165,8 +165,9 @@ app.get('/api/player-info', async (req, res) => {
     
     res.json({
       citizenId: player.citizenid,
-      firstName: charInfo.firstname, 
-      lastName: charInfo.lastname,   
+      firstName: charInfo.firstname || charInfo.firstName || '',
+      lastName: charInfo.lastname || charInfo.lastName || '',
+      fullName: charInfo.fullname || charInfo.name || '',
       cash: parseFloat(moneyData.cash) || 0,
       valBank: parseFloat(moneyData.valbank) || 0,
       armBank: parseFloat(moneyData.armbank) || 0,
