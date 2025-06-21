@@ -145,9 +145,9 @@ app.get('/api/player-info', async (req, res) => {
     console.log('VIP Coins table structure:', columns);
 
     // First get player info with VIP coins
-    const query = 'SELECT p.citizenid, p.money, p.charinfo, p.license, COALESCE(v.amount, 0) as vip_coins ' +
+    const query = 'SELECT p.citizenid, p.money, p.charinfo, COALESCE(v.amount, 0) as vip_coins ' +
                  'FROM players p ' +
-                 'LEFT JOIN cas_vip_coin v ON v.identifier = p.license ' +
+                 'LEFT JOIN cas_vip_coin v ON v.identifier = p.citizenid ' +
                  'LIMIT 1';
     console.log('Executing query:', query);
     
