@@ -7,8 +7,8 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 require('dotenv').config();
 
 // PayPal configuration
-const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
-const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
+const PAYPAL_CLIENT_ID = 'AdP8TYJ6YeqLSiNGtXm4fmwnLGgnuE93kdCkvTRUXdvez7L_albSJH096X504H41jDINA5CORfBfT5mV';
+const PAYPAL_CLIENT_SECRET = 'EPq9GHLTVwazu9djsuw1fkMyLrzXZOZEBqURJP5zPuIMjfbhxaL7anCR1zjkKTEkgB3wLAilQbz4ITrn';
 const PAYPAL_API = 'https://api-m.paypal.com';
 
 const app = express();
