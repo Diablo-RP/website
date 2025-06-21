@@ -10,12 +10,18 @@ app.use(express.json());
 app.use(express.static('.')); // Serve static files
 
 // Database connection
-const db = mysql.createConnection({
+// Database configuration
+const dbConfig = {
   host: 'localhost',
   user: 'root', // Change these credentials
   password: '', // Change these credentials
-  database: 'Diablorp'
-});
+  database: 'Diablorp',
+  port: 3306 // Default MySQL port
+};
+
+console.log('Attempting to connect to database with config:', dbConfig);
+
+const db = mysql.createConnection(dbConfig);
 
 db.connect((err) => {
   if (err) {
