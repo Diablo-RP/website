@@ -85,7 +85,7 @@
             <div class="section-heading-app">
               <h2>Create Account</h2>
             </div>
-            <form id="create-account-form" class="text-center">
+            <form id="create-account-form" class="text-center" onsubmit="handleRegistration(event)">
               <div class="form-group mb-4">
                 <input type="text" class="form-control" id="steamId" placeholder="Steam ID" required>
                 <small class="form-text text-muted">Enter your Steam64 ID</small>
@@ -124,5 +124,41 @@
   <script src="assets/js/owl-carousel.js"></script>
   <script src="assets/js/counter.js"></script>
   <script src="assets/js/custom.js"></script>
+  <script>
+    async function handleRegistration(event) {
+      event.preventDefault();
+      
+      const steamId = document.getElementById('steamId').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      
+      if (password !== confirmPassword) {
+        alert('Passwords do not match');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ steamId, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          alert(`Account created successfully! Your Character ID is: ${data.characterId}\nPlease save this ID as you will need it to sign in.`);
+          window.location.href = 'signin.html';
+        } else {
+          alert(data.error || 'Error creating account');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error creating account');
+      }
+    }
+  </script>
 </body>
 </html>

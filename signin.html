@@ -85,7 +85,7 @@
             <div class="section-heading-app">
               <h2>Sign In</h2>
             </div>
-            <form id="signin-form" class="text-center">
+            <form id="signin-form" class="text-center" onsubmit="handleLogin(event)">
               <div class="form-group mb-4">
                 <input type="text" class="form-control" id="characterId" placeholder="Character ID" required>
               </div>
@@ -120,5 +120,36 @@
   <script src="assets/js/owl-carousel.js"></script>
   <script src="assets/js/counter.js"></script>
   <script src="assets/js/custom.js"></script>
+  <script>
+    async function handleLogin(event) {
+      event.preventDefault();
+      
+      const characterId = document.getElementById('characterId').value;
+      const password = document.getElementById('password').value;
+      
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ characterId, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          alert('Login successful!');
+          // Redirect to dashboard or home page
+          window.location.href = 'index.html';
+        } else {
+          alert(data.error || 'Invalid character ID or password');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error during login');
+      }
+    }
+  </script>
 </body>
 </html>
