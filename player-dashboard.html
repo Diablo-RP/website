@@ -208,64 +208,54 @@
         $.ajax({
           url: '/api/player-info',
           method: 'GET',
-          success: function(characters) {
-            console.log('Received characters:', characters);
+          success: function(character) {
+            console.log('Received character:', character);
             const container = $('#characters-container');
             
-            if (!Array.isArray(characters)) {
-              console.error('Expected array of characters, got:', typeof characters);
-              return;
-            }
+            const characterDiv = $('<div>').addClass('character-card mb-4 p-4 border rounded');
             
-            characters.forEach(character => {
-              console.log('Processing character:', character);
-              const characterDiv = $('<div>').addClass('character-card mb-4 p-4 border rounded');
-              
-              // Character name section
-              const fullName = character.firstName + (character.lastName ? ` ${character.lastName}` : '');
-              characterDiv.append(`
-                <h3 class="mb-3">${fullName || 'Unknown'}</h3>
-                <p class="text-muted">Citizen ID: ${character.citizenId || 'Unknown'}</p>
+            // Character name section
+            const fullName = character.firstName + (character.lastName ? ` ${character.lastName}` : '');
+            characterDiv.append(`
+              <h3 class="mb-3">${fullName || 'Unknown'}</h3>
+              <p class="text-muted">Citizen ID: ${character.citizenId || 'Unknown'}</p>
+            `);
+
+            // Money grid
+            const moneyGrid = $('<div>').addClass('money-grid');
+            
+            // Add money boxes
+            const moneyBoxes = [
+              { label: 'Cash', value: character.cash },
+              { label: 'Valentine Bank', value: character.valBank },
+              { label: 'Armadillo Bank', value: character.armBank },
+              { label: 'Rhodes Bank', value: character.rhoBank },
+              { label: 'Blackwater Bank', value: character.blkBank },
+              { label: 'Bank', value: character.bank },
+              { label: 'Blood Money', value: character.bloodMoney }
+            ];
+
+            moneyBoxes.forEach(box => {
+              const moneyBox = $(`
+                <div class="money-box">
+                  <div class="money-label">${box.label}</div>
+                  <div class="money-value">$${(box.value || 0).toFixed(2)}</div>
+                </div>
               `);
-
-              // Money grid
-              const moneyGrid = $('<div>').addClass('money-grid');
-              
-              // Add money boxes
-              const moneyBoxes = [
-                { label: 'Cash', value: character.cash },
-                { label: 'Valentine Bank', value: character.valBank },
-                { label: 'Armadillo Bank', value: character.armBank },
-                { label: 'Rhodes Bank', value: character.rhoBank },
-                { label: 'Blackwater Bank', value: character.blkBank },
-                { label: 'Bank', value: character.bank },
-                { label: 'Blood Money', value: character.bloodMoney }
-              ];
-
-              moneyBoxes.forEach(box => {
-                const moneyBox = $(`
-                  <div class="money-box">
-                    <div class="money-label">${box.label}</div>
-                    <div class="money-value">$${(box.value || 0).toFixed(2)}</div>
-                  </div>
-                `);
-                moneyGrid.append(moneyBox);
-              });
-
-              characterDiv.append(moneyGrid);
-              container.append(characterDiv);
+              moneyGrid.append(moneyBox);
             });
 
-            // Add VIP coins display (same for all characters since it's per license)
-            if (characters.length > 0) {
-              if ($('.vip-coins').length === 0) { // Only add if not already present
-                $('body').append(`
-                  <div class="vip-coins">
-                    <i class="fa fa-crown"></i>
-                    <span>${characters[0].vipCoins || 0}</span>
-                  </div>
-                `);
-              }
+            characterDiv.append(moneyGrid);
+            container.append(characterDiv);
+
+            // Add VIP coins display
+            if ($('.vip-coins').length === 0) { // Only add if not already present
+              $('body').append(`
+                <div class="vip-coins">
+                  <i class="fa fa-crown"></i>
+                  <span>${character.vipCoins || 0}</span>
+                </div>
+              `);
             }
           },
           error: function(jqXHR, textStatus, errorThrown) {
