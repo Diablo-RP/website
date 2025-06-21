@@ -21,6 +21,40 @@ body, html {
     background-color: var(--ash-black) !important;
 }
 
+/* Lore section styling */
+.left-text.mb-5 {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px;
+    background-color: var(--ash-black);
+    border-radius: 25px;
+    border: 1px solid var(--burnt-gold);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.left-text.mb-5 .section-heading-app h2 {
+    font-size: 2.5em;
+    margin-bottom: 30px;
+    text-align: center;
+    color: var(--burnt-gold);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.left-text.mb-5 .section-heading-app h6 {
+    text-align: center;
+    color: var(--blood-red);
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+.left-text.mb-5 .lore-text p {
+    font-size: 1.1em;
+    line-height: 1.8;
+    margin-bottom: 20px;
+    text-align: justify;
+    color: var(--burnt-gold);
+}
+
 /* Override any white backgrounds */
 .header-area,
 .header-area .main-nav,
