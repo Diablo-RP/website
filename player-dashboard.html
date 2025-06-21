@@ -100,7 +100,7 @@
       // Check if user is logged in
       window.onload = async function() {
         try {
-          const response = await fetch('http://localhost:3001/api/player-info', {
+          const response = await fetch('/api/player-info', {
             method: 'GET',
             credentials: 'include'
           });
@@ -120,6 +120,7 @@
         } catch (error) {
           console.error('Error:', error);
           alert('Error loading player information');
+          window.location.href = 'signin.html';
         }
       }
     </script>
