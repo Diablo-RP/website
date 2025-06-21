@@ -134,9 +134,9 @@ app.post('/api/login', async (req, res) => {
 // Get player info
 app.get('/api/player-info', async (req, res) => {
   try {
-    // Get user info from players table
+    // Get user info from players table with all money columns
     const [players] = await db.promise().query(
-      'SELECT citizenid, money FROM players LIMIT 1'
+      'SELECT citizenid, money, bank, crypto FROM players LIMIT 1'
     );
     
     if (players.length === 0) {
@@ -146,7 +146,9 @@ app.get('/api/player-info', async (req, res) => {
     const player = players[0];
     res.json({
       citizenId: player.citizenid,
-      money: parseInt(player.money) || 0
+      cash: parseInt(player.money) || 0,
+      bank: parseInt(player.bank) || 0,
+      crypto: parseInt(player.crypto) || 0
     });
   } catch (error) {
     console.error('Error fetching player info:', error);

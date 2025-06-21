@@ -10,6 +10,46 @@
     <!-- Additional CSS Files -->
     <link rel="stylesheet" href="assets/css/fontawesome.css">
     <link rel="stylesheet" href="assets/css/diablo.css">
+    <style>
+      .dashboard-title {
+        color: #8b0000; /* Blood red */
+        font-size: 2.5em;
+        text-transform: uppercase;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        margin-bottom: 30px;
+        text-align: center;
+      }
+      .player-info {
+        background: rgba(0,0,0,0.7);
+        padding: 30px;
+        border-radius: 15px;
+        margin-top: 20px;
+      }
+      .money-box {
+        background: rgba(139,0,0,0.1);
+        border: 1px solid #8b0000;
+        padding: 20px;
+        margin: 10px 0;
+        border-radius: 10px;
+      }
+      .money-label {
+        color: #fff;
+        font-size: 1.2em;
+        margin-bottom: 5px;
+      }
+      .money-value {
+        color: #ffd700; /* Gold color for money */
+        font-size: 1.5em;
+        font-weight: bold;
+      }
+      .citizen-id {
+        color: #8b0000;
+        font-size: 1.3em;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+    </style>
   </head>
 
   <body>
@@ -53,11 +93,31 @@
                 <div class="main-profile">
                   <div class="row">
                     <div class="col-lg-12">
-                      <h2>Player Dashboard</h2>
+                      <h1 class="dashboard-title">Player Dashboard</h1>
                       <div class="player-info">
-                        <h4>Character Information</h4>
-                        <p><strong>Citizen ID:</strong> <span id="citizenId">Loading...</span></p>
-                        <p><strong>Money:</strong> $<span id="money">Loading...</span></p>
+                        <div class="citizen-id">
+                          <i class="fa fa-id-card"></i> Citizen ID: <span id="citizenId">Loading...</span>
+                        </div>
+                        <div class="row">
+                          <div class="col-md-4">
+                            <div class="money-box">
+                              <div class="money-label">Cash</div>
+                              <div class="money-value">$<span id="cash">Loading...</span></div>
+                            </div>
+                          </div>
+                          <div class="col-md-4">
+                            <div class="money-box">
+                              <div class="money-label">Bank Balance</div>
+                              <div class="money-value">$<span id="bank">Loading...</span></div>
+                            </div>
+                          </div>
+                          <div class="col-md-4">
+                            <div class="money-box">
+                              <div class="money-label">Crypto</div>
+                              <div class="money-value">$<span id="crypto">Loading...</span></div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -84,6 +144,10 @@
     <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
     <script src="assets/js/custom.js"></script>
     <script>
+      function formatMoney(amount) {
+        return amount.toLocaleString('en-US');
+      }
+
       // Load player info when the page loads
       window.onload = async function() {
         try {
@@ -97,17 +161,23 @@
           if (response.ok) {
             const data = await response.json();
             document.getElementById('citizenId').textContent = data.citizenId || 'Not found';
-            document.getElementById('money').textContent = data.money ? data.money.toLocaleString() : '0';
+            document.getElementById('cash').textContent = formatMoney(data.cash);
+            document.getElementById('bank').textContent = formatMoney(data.bank);
+            document.getElementById('crypto').textContent = formatMoney(data.crypto);
           } else {
             const error = await response.json();
             console.error('Error:', error);
             document.getElementById('citizenId').textContent = 'Error loading data';
-            document.getElementById('money').textContent = 'Error loading data';
+            document.getElementById('cash').textContent = 'Error';
+            document.getElementById('bank').textContent = 'Error';
+            document.getElementById('crypto').textContent = 'Error';
           }
         } catch (error) {
           console.error('Error:', error);
           document.getElementById('citizenId').textContent = 'Error loading data';
-          document.getElementById('money').textContent = 'Error loading data';
+          document.getElementById('cash').textContent = 'Error';
+          document.getElementById('bank').textContent = 'Error';
+          document.getElementById('crypto').textContent = 'Error';
         }
       };
     </script>
