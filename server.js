@@ -166,6 +166,7 @@ app.get('/api/player-info', async (req, res) => {
       armBank: parseFloat(moneyData.armbank) || 0,
       rhoBank: parseFloat(moneyData.rhobank) || 0,
       blkBank: parseFloat(moneyData.blkbank) || 0,
+      bank: parseFloat(moneyData.bank) || 0,
       bloodMoney: parseFloat(moneyData.bloodmoney) || 0
     });
   } catch (error) {

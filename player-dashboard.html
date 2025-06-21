@@ -109,16 +109,50 @@
                           <i class="fa fa-id-card"></i> Citizen ID: <span id="citizenId">Loading...</span>
                         </div>
                         <div class="row">
-                          <div class="col-md-6">
+                          <div class="col-md-4">
                             <div class="money-box">
                               <div class="money-label">Cash</div>
                               <div class="money-value">$<span id="cash">Loading...</span></div>
                             </div>
                           </div>
-                          <div class="col-md-6">
+                          <div class="col-md-4">
                             <div class="money-box">
-                              <div class="money-label">Bank Balance</div>
+                              <div class="money-label">Valentine Bank</div>
+                              <div class="money-value">$<span id="valBank">Loading...</span></div>
+                            </div>
+                          </div>
+                          <div class="col-md-4">
+                            <div class="money-box">
+                              <div class="money-label">Armadillo Bank</div>
+                              <div class="money-value">$<span id="armBank">Loading...</span></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="row mt-3">
+                          <div class="col-md-4">
+                            <div class="money-box">
+                              <div class="money-label">Rhodes Bank</div>
+                              <div class="money-value">$<span id="rhoBank">Loading...</span></div>
+                            </div>
+                          </div>
+                          <div class="col-md-4">
+                            <div class="money-box">
+                              <div class="money-label">Blackwater Bank</div>
+                              <div class="money-value">$<span id="blkBank">Loading...</span></div>
+                            </div>
+                          </div>
+                          <div class="col-md-4">
+                            <div class="money-box">
+                              <div class="money-label">Bank</div>
                               <div class="money-value">$<span id="bank">Loading...</span></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="row mt-3">
+                          <div class="col-md-4">
+                            <div class="money-box blood-money">
+                              <div class="money-label">Blood Money</div>
+                              <div class="money-value">$<span id="bloodMoney">Loading...</span></div>
                             </div>
                           </div>
                         </div>
@@ -166,19 +200,34 @@
             const data = await response.json();
             document.getElementById('citizenId').textContent = data.citizenId || 'Not found';
             document.getElementById('cash').textContent = formatMoney(data.cash);
+            document.getElementById('valBank').textContent = formatMoney(data.valBank);
+            document.getElementById('armBank').textContent = formatMoney(data.armBank);
+            document.getElementById('rhoBank').textContent = formatMoney(data.rhoBank);
+            document.getElementById('blkBank').textContent = formatMoney(data.blkBank);
             document.getElementById('bank').textContent = formatMoney(data.bank);
+            document.getElementById('bloodMoney').textContent = formatMoney(data.bloodMoney);
           } else {
             const error = await response.json();
             console.error('Error:', error);
             document.getElementById('citizenId').textContent = 'Error loading data';
             document.getElementById('cash').textContent = 'Error';
+            document.getElementById('valBank').textContent = 'Error';
+            document.getElementById('armBank').textContent = 'Error';
+            document.getElementById('rhoBank').textContent = 'Error';
+            document.getElementById('blkBank').textContent = 'Error';
             document.getElementById('bank').textContent = 'Error';
+            document.getElementById('bloodMoney').textContent = 'Error';
           }
         } catch (error) {
           console.error('Error:', error);
           document.getElementById('citizenId').textContent = 'Error loading data';
           document.getElementById('cash').textContent = 'Error';
+          document.getElementById('valBank').textContent = 'Error';
+          document.getElementById('armBank').textContent = 'Error';
+          document.getElementById('rhoBank').textContent = 'Error';
+          document.getElementById('blkBank').textContent = 'Error';
           document.getElementById('bank').textContent = 'Error';
+          document.getElementById('bloodMoney').textContent = 'Error';
         }
       };
     </script>
