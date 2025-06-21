@@ -84,12 +84,12 @@
         <h2 class="text-white mb-4">Create New Ticket</h2>
         <form id="ticketForm">
           <div class="form-group mb-3">
-            <label for="subject" class="text-white">Subject</label>
-            <input type="text" class="form-control" id="subject" required>
+            <label for="ticketSubject" class="text-white">Subject</label>
+            <input type="text" class="form-control" id="ticketSubject" required>
           </div>
           <div class="form-group mb-3">
-            <label for="category" class="text-white">Category</label>
-            <select class="form-control" id="category" required>
+            <label for="ticketCategory" class="text-white">Category</label>
+            <select class="form-control" id="ticketCategory" required>
               <option value="">Select a category</option>
               <option value="technical">Technical Issue</option>
               <option value="gameplay">Gameplay Issue</option>
@@ -98,8 +98,8 @@
             </select>
           </div>
           <div class="form-group mb-3">
-            <label for="description" class="text-white">Description</label>
-            <textarea class="form-control" id="description" rows="5" required></textarea>
+            <label for="ticketDescription" class="text-white">Description</label>
+            <textarea class="form-control" id="ticketDescription" rows="5" required></textarea>
           </div>
           <button type="submit" class="btn btn-primary">Submit Ticket</button>
         </form>
@@ -109,10 +109,21 @@
       <div class="ticket-list mt-5">
         <h2 class="text-white mb-4">Your Tickets</h2>
         <div id="ticketsList">
-          <!-- Tickets will be loaded here dynamically -->
+          <!-- Tickets will be loaded here -->
         </div>
       </div>
     </div>
+
+    <!-- Footer -->
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <p>Copyright 2024 DiabloRP. All rights reserved.</p>
+          </div>
+        </div>
+      </div>
+    </footer>
 
     <!-- Scripts -->
     <script src="vendor/jquery/jquery.min.js"></script>
@@ -126,14 +137,14 @@
           return;
         }
 
-        // Handle ticket submission
+        // Handle form submission
         $('#ticketForm').on('submit', function(event) {
           event.preventDefault();
           
           const formData = {
-            subject: $('#subject').val(),
-            category: $('#category').val(),
-            description: $('#description').val()
+            subject: $('#ticketSubject').val(),
+            category: $('#ticketCategory').val(),
+            description: $('#ticketDescription').val()
           };
 
           $.ajax({
@@ -161,6 +172,12 @@
 
         // Load tickets
         function loadTickets() {
+          const characterId = sessionStorage.getItem('characterId');
+          if (!characterId) {
+            window.location.href = 'signin.html';
+            return;
+          }
+
           $.ajax({
             url: 'http://localhost:3001/api/tickets',
             method: 'GET',
@@ -171,17 +188,17 @@
               const ticketsList = $('#ticketsList');
               ticketsList.empty();
 
-              if (response.tickets.length === 0) {
+              if (!response.tickets || response.tickets.length === 0) {
                 ticketsList.html('<p class="text-white">No tickets found.</p>');
                 return;
               }
 
               response.tickets.forEach(ticket => {
                 const statusClass = {
-                  'open': 'text-warning',
-                  'in_progress': 'text-info',
-                  'closed': 'text-success'
-                }[ticket.status];
+                  'open': 'text-success',
+                  'in_progress': 'text-warning',
+                  'closed': 'text-danger'
+                }[ticket.status] || 'text-white';
 
                 const ticketHtml = `
                   <div class="ticket-item">
@@ -226,6 +243,12 @@
 
         // Handle ticket closure
         $(document).on('click', '.close-ticket', function() {
+          const characterId = sessionStorage.getItem('characterId');
+          if (!characterId) {
+            window.location.href = 'signin.html';
+            return;
+          }
+
           const ticketId = $(this).data('ticket-id');
           
           $.ajax({
