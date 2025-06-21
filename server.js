@@ -134,6 +134,14 @@ const DISCORD_COLORS = {
   response: COLORS.bloodRed  // Blood red for admin responses
 };
 
+// Discord notification images
+const TICKET_IMAGES = {
+  player: `${WEBSITE_URL}/assets/images/player-report.png`,
+  technical: `${WEBSITE_URL}/assets/images/technical-issue.png`,
+  gameplay: `${WEBSITE_URL}/assets/images/gameplay-issue.png`,
+  default: `${WEBSITE_URL}/assets/images/logo.png`
+};
+
 // Function to create a styled field
 function createField(name, value, inline = false) {
   return {
@@ -141,6 +149,11 @@ function createField(name, value, inline = false) {
     value: value ? value : 'N/A',
     inline: inline
   };
+}
+
+// Function to create a styled divider
+function createDivider() {
+  return createField('\u200b', '\u200b', false);
 }
 
 // Function to send Discord notification
@@ -152,6 +165,14 @@ async function sendDiscordNotification(type, data) {
       color: DISCORD_COLORS[type],
       timestamp: new Date().toISOString(),
       url: `${WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id}`,
+      thumbnail: {
+        url: TICKET_IMAGES[data.ticket.category?.toLowerCase()] || TICKET_IMAGES.default
+      },
+      author: {
+        name: 'Diablo County RP Support',
+        icon_url: `${WEBSITE_URL}/assets/images/logo.png`,
+        url: WEBSITE_URL
+      },
       footer: {
         text: `Ticket #${data.ticket.id} • Diablo County RP`,
         icon_url: `${WEBSITE_URL}/assets/images/logo.png`
@@ -167,15 +188,21 @@ async function sendDiscordNotification(type, data) {
           ...embed,
           title: '🎫 New Support Ticket',
           description: `A new support ticket has been created and requires attention.\n\n**Quick Actions**\n• [View Ticket](${WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id})\n• [View All Tickets](${WEBSITE_URL}/admin-tickets.html)`,
+          image: {
+            url: `${WEBSITE_URL}/assets/images/ticket-banner.png`
+          },
           fields: [
-            createField('Subject', data.ticket.subject),
+            createField('Subject', `\`${data.ticket.subject}\``),
             createField('Category', data.ticket.category, true),
             createField('Priority', getPriorityText(data.ticket.category), true),
+            createDivider(),
             createField('Description', data.ticket.description.length > 1024 ? 
               data.ticket.description.substring(0, 1021) + '...' : 
               data.ticket.description),
+            createDivider(),
             createField('Submitted By', `\`${data.user.character_id}\``, true),
-            createField('Status', '`NEW`', true)
+            createField('Status', '`NEW`', true),
+            createField('Created', `<t:${Math.floor(Date.now() / 1000)}:R>`, true)
           ]
         };
         break;
@@ -187,30 +214,35 @@ async function sendDiscordNotification(type, data) {
           title: `${getStatusEmoji(data.newStatus)} Status Update`,
           description: `The status of ticket [#${data.ticket.id}](${WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id}) has been updated.`,
           fields: [
-            createField('Ticket', data.ticket.subject),
+            createField('Ticket', `\`${data.ticket.subject}\``),
+            createDivider(),
             createField('Previous Status', getStatusEmoji(data.ticket.status) + ' ' + data.ticket.status.toUpperCase(), true),
             createField('New Status', getStatusEmoji(data.newStatus) + ' ' + data.newStatus.toUpperCase(), true),
-            createField('Updated By', `\`${data.user.character_id}\``, true)
+            createField('Updated By', `\`${data.user.character_id}\``, true),
+            createField('Updated', `<t:${Math.floor(Date.now() / 1000)}:R>`, true)
           ]
         };
         break;
 
       case 'response':
         content = data.newStatus === 'closed' ? '' : 
-                 (DISCORD_MOD_ROLE_ID ? `<@&${DISCORD_MOD_ROLE_ID}> Ticket updated` : '');
+                 (DISCORD_MOD_ROLE_ID ? `⚡ <@&${DISCORD_MOD_ROLE_ID}> Ticket updated` : '');
         embed = {
           ...embed,
           title: '💬 Admin Response',
           description: `An admin has responded to ticket [#${data.ticket.id}](${WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id}).`,
           fields: [
-            createField('Ticket', data.ticket.subject),
+            createField('Ticket', `\`${data.ticket.subject}\``),
+            createDivider(),
             createField('Response', data.response.length > 1024 ? 
               data.response.substring(0, 1021) + '...' : 
               data.response),
+            createDivider(),
             createField('Status', data.newStatus ? 
               getStatusEmoji(data.newStatus) + ' ' + data.newStatus.toUpperCase() : 
               'Unchanged', true),
-            createField('Admin', `\`${data.user.character_id}\``, true)
+            createField('Admin', `\`${data.user.character_id}\``, true),
+            createField('Responded', `<t:${Math.floor(Date.now() / 1000)}:R>`, true)
           ]
         };
         break;
