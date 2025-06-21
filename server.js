@@ -105,6 +105,36 @@ db.connect((err) => {
               console.log('Responses table ready');
             }
           });
+
+          // Create characters table if it doesn't exist
+          const createCharactersTable = `
+            CREATE TABLE IF NOT EXISTS characters (
+              id INT AUTO_INCREMENT PRIMARY KEY,
+              user_id INT NOT NULL,
+              first_name VARCHAR(255) NOT NULL,
+              last_name VARCHAR(255),
+              citizen_id VARCHAR(255) UNIQUE NOT NULL,
+              cash DECIMAL(10,2) DEFAULT 0.00,
+              val_bank DECIMAL(10,2) DEFAULT 0.00,
+              arm_bank DECIMAL(10,2) DEFAULT 0.00,
+              rho_bank DECIMAL(10,2) DEFAULT 0.00,
+              blk_bank DECIMAL(10,2) DEFAULT 0.00,
+              bank DECIMAL(10,2) DEFAULT 0.00,
+              blood_money DECIMAL(10,2) DEFAULT 0.00,
+              vip_coins INT DEFAULT 0,
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+              FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+          `;
+          
+          db.query(createCharactersTable, (err) => {
+            if (err) {
+              console.error('Error creating characters table:', err);
+            } else {
+              console.log('Characters table ready');
+            }
+          });
         }
       });
     }
@@ -400,55 +430,73 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Get player info
+// Player info endpoint
 app.get('/api/player-info', async (req, res) => {
   try {
-    // Check if cas_vip_coin table exists
-    const [tables] = await db.promise().query('SHOW TABLES LIKE "cas_vip_coin"');
-    console.log('Tables:', tables);
+    const [characters] = await db.promise().query(
+      `SELECT c.*, u.character_id 
+       FROM characters c 
+       JOIN users u ON c.user_id = u.id 
+       WHERE u.character_id = ?`,
+      [req.headers['character-id']]
+    );
 
-    // Get table structure
-    const [columns] = await db.promise().query('DESCRIBE cas_vip_coin');
-    console.log('VIP Coins table structure:', columns);
+    if (characters.length === 0) {
+      // If no character found, create a new one
+      const [user] = await db.promise().query(
+        'SELECT id FROM users WHERE character_id = ?',
+        [req.headers['character-id']]
+      );
 
-    // First get player info with VIP coins
-    const query = 'SELECT p.citizenid, p.money, p.charinfo, COALESCE(v.amount, 0) as vip_coins ' +
-                 'FROM players p ' +
-                 'LEFT JOIN cas_vip_coin v ON v.identifier = p.citizenid ' +
-                 'LIMIT 1';
-    console.log('Executing query:', query);
-    
-    const [players] = await db.promise().query(query);
-    console.log('Query result:', players);
-    
-    if (players.length === 0) {
-      return res.status(404).json({ error: 'Player not found' });
+      if (user.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const [result] = await db.promise().query(
+        `INSERT INTO characters (user_id, first_name, last_name, citizen_id) 
+         VALUES (?, 'New', 'Character', ?)`,
+        [user[0].id, `CIT${Math.floor(Math.random() * 100000)}`]
+      );
+
+      const [newCharacter] = await db.promise().query(
+        'SELECT * FROM characters WHERE id = ?',
+        [result.insertId]
+      );
+
+      return res.json({
+        id: newCharacter[0].id,
+        firstName: newCharacter[0].first_name,
+        lastName: newCharacter[0].last_name,
+        citizenId: newCharacter[0].citizen_id,
+        cash: newCharacter[0].cash,
+        valBank: newCharacter[0].val_bank,
+        armBank: newCharacter[0].arm_bank,
+        rhoBank: newCharacter[0].rho_bank,
+        blkBank: newCharacter[0].blk_bank,
+        bank: newCharacter[0].bank,
+        bloodMoney: newCharacter[0].blood_money,
+        vipCoins: newCharacter[0].vip_coins
+      });
     }
-    
-    const player = players[0];
-    const moneyData = JSON.parse(player.money);
-    const charInfo = JSON.parse(player.charinfo);
-    console.log('Character Info:', charInfo);
-    
+
+    // Return existing character
     res.json({
-      citizenId: player.citizenid,
-      firstName: charInfo.firstname,
-      lastName: charInfo.lastname,
-      vipCoins: parseInt(player.vip_coins) || 0,
-      cash: parseFloat(moneyData.cash) || 0,
-      valBank: parseFloat(moneyData.valbank) || 0,
-      armBank: parseFloat(moneyData.armbank) || 0,
-      rhoBank: parseFloat(moneyData.rhobank) || 0,
-      blkBank: parseFloat(moneyData.blkbank) || 0,
-      bank: parseFloat(moneyData.bank) || 0,
-      bloodMoney: parseFloat(moneyData.bloodmoney) || 0
+      id: characters[0].id,
+      firstName: characters[0].first_name,
+      lastName: characters[0].last_name,
+      citizenId: characters[0].citizen_id,
+      cash: characters[0].cash,
+      valBank: characters[0].val_bank,
+      armBank: characters[0].arm_bank,
+      rhoBank: characters[0].rho_bank,
+      blkBank: characters[0].blk_bank,
+      bank: characters[0].bank,
+      bloodMoney: characters[0].blood_money,
+      vipCoins: characters[0].vip_coins
     });
   } catch (error) {
     console.error('Error fetching player info:', error);
-    res.status(500).json({ 
-      error: 'Error fetching player information',
-      details: error.message
-    });
+    res.status(500).json({ error: 'Failed to fetch player info' });
   }
 });
 

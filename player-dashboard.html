@@ -204,22 +204,37 @@
     </div>
 
     <script>
-      $(document).ready(function() {
+      // Check authentication on page load
+      document.addEventListener('DOMContentLoaded', function() {
+        const characterId = sessionStorage.getItem('characterId');
+        if (!characterId) {
+          window.location.href = 'signin.html';
+          return;
+        }
+
+        // Update navigation to show admin link if admin
+        updateNavigation();
+
         // Fetch player info
         $.ajax({
-          url: '/api/player-info',
+          url: 'http://localhost:3001/api/player-info',
           method: 'GET',
+          headers: {
+            'character-id': characterId
+          },
           success: function(character) {
             console.log('Received character:', character);
             const container = $('#characters-container');
             
-            const characterDiv = $('<div>').addClass('character-card mb-4 p-4 border rounded');
+            const characterDiv = $('<div>').addClass('character-card mb-4');
             
             // Character name section
             const fullName = character.firstName + (character.lastName ? ` ${character.lastName}` : '');
             characterDiv.append(`
-              <h3 class="mb-3">${fullName || 'Unknown'}</h3>
-              <p class="text-muted">Citizen ID: ${character.citizenId || 'Unknown'}</p>
+              <div class="player-header">
+                <h2 class="player-name">${fullName || 'Unknown'}</h2>
+                <div class="citizen-id">Citizen ID: ${character.citizenId || 'Unknown'}</div>
+              </div>
             `);
 
             // Money grid
@@ -237,13 +252,15 @@
             ];
 
             moneyBoxes.forEach(box => {
-              const moneyBox = $(`
-                <div class="money-box">
-                  <div class="money-label">${box.label}</div>
-                  <div class="money-value">$${(box.value || 0).toFixed(2)}</div>
-                </div>
-              `);
-              moneyGrid.append(moneyBox);
+              if (typeof box.value !== 'undefined') {
+                const moneyBox = $(`
+                  <div class="money-box">
+                    <div class="money-label">${box.label}</div>
+                    <div class="money-value">$${(parseFloat(box.value) || 0).toFixed(2)}</div>
+                  </div>
+                `);
+                moneyGrid.append(moneyBox);
+              }
             });
 
             characterDiv.append(moneyGrid);
@@ -254,7 +271,7 @@
               $('body').append(`
                 <div class="vip-coins">
                   <i class="fa fa-crown"></i>
-                  <span>${character.vipCoins || 0}</span>
+                  <span>${character.vipCoins || 0} VIP Coins</span>
                 </div>
               `);
             }
@@ -263,15 +280,17 @@
             console.error('Error fetching player info:', textStatus, errorThrown);
             $('#characters-container').html(`
               <div class="alert alert-danger">
-                Error loading character information. Please try again later.
+                <h4>Error Loading Character</h4>
+                <p>Unable to load character information. Please try signing in again.</p>
+                <button class="btn btn-primary mt-3" onclick="window.location.href='signin.html'">
+                  Return to Sign In
+                </button>
               </div>
             `);
           }
         });
       });
-    </script>
 
-    <script>
       function updateNavigation() {
         const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
         const nav = document.querySelector('.main-nav .nav');
@@ -290,20 +309,6 @@
           nav.insertBefore(adminLink, supportLink.nextSibling);
         }
       }
-
-      // Check authentication on page load
-      document.addEventListener('DOMContentLoaded', function() {
-        const characterId = sessionStorage.getItem('characterId');
-        if (!characterId) {
-          window.location.href = 'signin.html';
-          return;
-        }
-
-        // Update navigation to show admin link if admin
-        updateNavigation();
-
-        // Rest of your existing initialization code...
-      });
     </script>
 
     <style>
