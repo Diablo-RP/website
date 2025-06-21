@@ -462,7 +462,7 @@ Header Style
   -o-transition: all 0.4s;
   -webkit-transition: all 0.4s;
   transition: all 0.4s;
-  background-color: #fff;
+  background-color: var(--ash-black);
   display: block;
   position: absolute;
   width: 30px;
@@ -476,7 +476,7 @@ Header Style
   -o-transition: all 0.4s;
   -webkit-transition: all 0.4s;
   transition: all 0.4s;
-  background-color: #fff;
+  background-color: var(--ash-black);
   display: block;
   position: absolute;
   width: 30px;
@@ -523,11 +523,11 @@ Header Style
   -ms-transform: translateY(6px) translateX(1px) rotate(45deg);
   -webkit-transform: translateY(6px) translateX(1px) rotate(45deg);
   transform: translateY(6px) translateX(1px) rotate(45deg);
-  background-color: #fff;
+  background-color: var(--ash-black);
 }
 
 .background-header .main-nav .menu-trigger.active span:before {
-  background-color: #fff;
+  background-color: var(--ash-black);
 }
 
 .header-area .main-nav .menu-trigger.active span:after {
@@ -535,11 +535,11 @@ Header Style
   -ms-transform: translateY(-6px) translateX(1px) rotate(-45deg);
   -webkit-transform: translateY(-6px) translateX(1px) rotate(-45deg);
   transform: translateY(-6px) translateX(1px) rotate(-45deg);
-  background-color: #fff;
+  background-color: var(--ash-black);
 }
 
 .background-header .main-nav .menu-trigger.active span:after {
-  background-color: #fff;
+  background-color: var(--ash-black);
 }
 
 .header-area.header-sticky .nav li a.active {
@@ -566,7 +566,7 @@ Header Style
   }
   .background-header .main-nav .nav,
   .header-area .main-nav .nav {
-    background-color: #fff;
+    background-color: var(--ash-black);
   }
   .background-header .main-nav .nav li a,
   .header-area .main-nav .nav li a {
@@ -574,7 +574,7 @@ Header Style
     height: 50px;
     font-weight: 400;
     color: var(--burnt-gold);
-    background-color: #fff;
+    background-color: var(--ash-black);
      border-radius: 0px 0px 25px 25px;
   }
   .background-header .main-nav .nav li,
@@ -676,7 +676,7 @@ Banner Style
 */
 
 .main-banner {
-  background-image: url(../images/banner-bg.jpg);
+  background-image: url(../images/banner-bg.png);
   border-radius: 0px 0px 150px 150px;
   background-position: center bottom;
   background-repeat: no-repeat;
@@ -727,7 +727,7 @@ Banner Style
   height: 50px;
   outline: none;
   border-radius: 25px;
-  background-color: #fff;
+  background-color: var(--ash-black);
   border: none;
   padding: 0px 25px;
   font-size: 14px;
@@ -810,7 +810,7 @@ Services Style
   padding: 35px;
   box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.15);
   border-radius: 25px;
-  background-color: #fff;
+  background-color: var(--ash-black);
   text-align: center;
 }
 
@@ -942,7 +942,7 @@ Trending Style
   text-transform: uppercase;
   font-weight: 600;
   color: var(--burnt-gold);
-  background-color: #eee;
+  background-color: var(--ash-black);
   padding: 8px 20px;
   border-radius: 25px;
   transition: all .3s;
@@ -1055,7 +1055,7 @@ Trending Style
   height: 40px;
   line-height: 40px;
   text-align: center;
-  background-color: #eee;
+  background-color: var(--ash-black);
   color: var(--burnt-gold);
   font-size: 15px;
   font-weight: 600;
@@ -1079,7 +1079,7 @@ Single Page Style
 .single-product .sep {
   width: 100%;
   height: 1px;
-  background-color: #eee;
+  background-color: var(--ash-black);
   margin: 80px 0px;
 }
 
@@ -1119,7 +1119,7 @@ Single Page Style
 .single-product form input {
   width: 80px;
   height: 50px;
-  background-color: #f7f7f7;
+  background-color: var(--ash-black);
   border: 1px solid #e7e7e7;
   border-radius: 25px;
   text-align: center;
@@ -1176,7 +1176,7 @@ Single Page Style
 }
 
 .tabs-content {
-  background-color: #f7f7f7;
+  background-color: var(--ash-black);
   border-radius: 25px;
   padding: 60px;
   transition: all 0.3s;
@@ -1229,7 +1229,7 @@ Contact PAge Style
 */
 
 .contact-page .left-text {
-  background-color: #f7f7f7;
+  background-color: var(--ash-black);
   border-radius: 25px;
   padding: 60px;
 }
@@ -1275,7 +1275,7 @@ Contact PAge Style
   height: 50px;
   border-radius: 25px;
   padding: 0px 20px;
-  background-color: #f7f7f7;
+  background-color: var(--ash-black);
   border: 1px solid #e7e7e7;
   font-size: 14px;
   color: #4a4a4a;
@@ -1287,7 +1287,7 @@ Contact PAge Style
   height: 130px;
   border-radius: 25px;
   padding: 20px 20px;
-  background-color: #f7f7f7;
+  background-color: var(--ash-black);
   border: 1px solid #e7e7e7;
   font-size: 14px;
   color: #4a4a4a;

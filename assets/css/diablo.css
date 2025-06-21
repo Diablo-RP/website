@@ -6,7 +6,7 @@
 }
 
 :root {
-    --ash-black: #1A1A1A;
+    --ash-black: #1C1C1C;
     --blood-red: #8B0000;
     --burnt-gold: #D4AF37;
     --dark-gold: #8B7355;
@@ -15,9 +15,49 @@
 }
 
 /* Global font styles */
-body {
+body, html {
     font-family: 'DiabloFont' !important;
     color: var(--burnt-gold);
+    background-color: var(--ash-black) !important;
+}
+
+/* Override any white backgrounds */
+.header-area,
+.header-area .main-nav,
+.header-area .main-nav .nav,
+.features .item,
+.trending .item,
+.most-played .item,
+.contact-page,
+.single-product,
+.page-heading,
+.main-banner,
+.dropdown-menu,
+.footer,
+.section,
+.container,
+.row,
+.col {
+    background-color: var(--ash-black) !important;
+}
+
+/* Ensure dropdown menus are visible */
+.dropdown-menu {
+    border: 1px solid var(--burnt-gold);
+}
+
+/* Style scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+    background-color: var(--ash-black);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--blood-red);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-track {
     background-color: var(--ash-black);
 }
 
