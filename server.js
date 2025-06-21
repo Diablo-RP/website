@@ -136,6 +136,7 @@ app.post('/api/login', async (req, res) => {
 // Get player info
 app.get('/api/player-info', async (req, res) => {
   try {
+<<<<<<< HEAD
     // Check if cas_vip_coin table exists
     const [tables] = await db.promise().query('SHOW TABLES LIKE "cas_vip_coin"');
     console.log('Tables:', tables);
@@ -152,6 +153,15 @@ app.get('/api/player-info', async (req, res) => {
     console.log('Executing query:', query);
     
     const [players] = await db.promise().query(query);
+=======
+    // First get player info
+    const [players] = await db.promise().query(
+      'SELECT p.citizenid, p.money, p.charinfo, COALESCE(v.amount, 0) as vip_coins ' +
+      'FROM players p ' +
+      'LEFT JOIN cas_vip_coin v ON p.citizenid = v.citizenid ' +
+      'LIMIT 1'
+    );
+>>>>>>> parent of 7c8de6c (w)
     console.log('Query result:', players);
     
     if (players.length === 0) {
