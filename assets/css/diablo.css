@@ -14,11 +14,24 @@
     --text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
+/* Global font styles */
+body {
+    font-family: 'DiabloFont' !important;
+    color: var(--burnt-gold);
+    background-color: var(--ash-black);
+}
+
 /* Apply DiabloFont to all headings */
 h1, h2, h3, h4, h5, h6 {
     font-family: 'DiabloFont' !important;
     color: var(--burnt-gold) !important;
     text-shadow: var(--text-shadow) !important;
+}
+
+/* Style all text elements */
+p, span, div, li, a {
+    font-family: 'DiabloFont' !important;
+    color: var(--burnt-gold);
 }
 
 /* Apply DiabloFont to navigation */
@@ -28,10 +41,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Style buttons */
-.main-button a {
+.main-button a, .btn-primary {
     font-family: 'DiabloFont' !important;
     background-color: var(--blood-red) !important;
     color: var(--burnt-gold) !important;
+    border-color: var(--burnt-gold) !important;
 }
 
 /* Style section headings */
@@ -43,4 +57,18 @@ h1, h2, h3, h4, h5, h6 {
 .section-heading h4 {
     font-family: 'DiabloFont' !important;
     color: var(--burnt-gold) !important;
+}
+
+/* Style form elements */
+input, textarea, select {
+    font-family: 'DiabloFont' !important;
+    color: var(--burnt-gold) !important;
+    background-color: var(--ash-black) !important;
+    border: 1px solid var(--burnt-gold) !important;
+}
+
+/* Style breadcrumbs */
+.breadcrumb, .breadcrumb a {
+    color: var(--burnt-gold) !important;
+    text-shadow: var(--text-shadow);
 }
