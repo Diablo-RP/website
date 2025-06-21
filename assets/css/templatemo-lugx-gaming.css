@@ -678,15 +678,26 @@ Banner Style
 .main-banner {
   background-image: url(../images/banner-bg.png);
   border-radius: 0px 0px 100px 100px;
-  background-position: center center;
+  background-position: center top;
   background-repeat: no-repeat;
-  background-size: 100% auto;
-  padding: 150px 0px;
-  min-height: 500px;
+  background-size: cover;
+  padding: 80px 0px;
+  min-height: 700px;
   display: flex;
   align-items: center;
   position: relative;
-  overflow: hidden;
+}
+
+.main-banner .right-image {
+  text-align: center;
+  position: relative;
+}
+
+.main-banner .right-image img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 25px;
+  margin-bottom: 20px;
 }
 
 @media (max-width: 991px) {
