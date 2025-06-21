@@ -119,6 +119,13 @@
     <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
     <script>
       $(document).ready(function() {
+        // Check authentication
+        const characterId = sessionStorage.getItem('characterId');
+        if (!characterId) {
+          window.location.href = '/signin.html';
+          return;
+        }
+
         // Handle ticket submission
         $('#ticketForm').on('submit', function(e) {
           e.preventDefault();
@@ -134,16 +141,22 @@
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'user-id': localStorage.getItem('userId') // You should implement proper authentication
+              'character-id': characterId
             },
             data: JSON.stringify(ticketData),
             success: function(response) {
               alert('Ticket created successfully!');
               $('#ticketForm')[0].reset();
-              loadTickets(); // Refresh the tickets list
+              loadTickets();
             },
             error: function(xhr) {
-              alert('Error creating ticket: ' + (xhr.responseJSON?.error || 'Unknown error'));
+              const error = xhr.responseJSON?.error || 'Unknown error';
+              if (xhr.status === 401) {
+                alert('Session expired. Please sign in again.');
+                window.location.href = '/signin.html';
+              } else {
+                alert('Error creating ticket: ' + error);
+              }
             }
           });
         });
@@ -154,7 +167,7 @@
             url: '/api/tickets',
             method: 'GET',
             headers: {
-              'user-id': localStorage.getItem('userId') // You should implement proper authentication
+              'character-id': characterId
             },
             success: function(response) {
               const ticketsList = $('#ticketsList');
@@ -192,7 +205,13 @@
               });
             },
             error: function(xhr) {
-              alert('Error loading tickets: ' + (xhr.responseJSON?.error || 'Unknown error'));
+              const error = xhr.responseJSON?.error || 'Unknown error';
+              if (xhr.status === 401) {
+                alert('Session expired. Please sign in again.');
+                window.location.href = '/signin.html';
+              } else {
+                alert('Error loading tickets: ' + error);
+              }
             }
           });
         }
@@ -206,14 +225,20 @@
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
-              'user-id': localStorage.getItem('userId') // You should implement proper authentication
+              'character-id': characterId
             },
             data: JSON.stringify({ status: 'closed' }),
             success: function() {
-              loadTickets(); // Refresh the tickets list
+              loadTickets();
             },
             error: function(xhr) {
-              alert('Error closing ticket: ' + (xhr.responseJSON?.error || 'Unknown error'));
+              const error = xhr.responseJSON?.error || 'Unknown error';
+              if (xhr.status === 401) {
+                alert('Session expired. Please sign in again.');
+                window.location.href = '/signin.html';
+              } else {
+                alert('Error closing ticket: ' + error);
+              }
             }
           });
         });

@@ -208,19 +208,44 @@ app.get('/api/player-info', async (req, res) => {
   }
 });
 
+// Authentication middleware
+const authenticateUser = async (req, res, next) => {
+  const characterId = req.headers['character-id'];
+  
+  if (!characterId) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
+  try {
+    const [users] = await db.promise().query(
+      'SELECT * FROM users WHERE character_id = ?',
+      [characterId]
+    );
+
+    if (users.length === 0) {
+      return res.status(401).json({ error: 'Invalid authentication' });
+    }
+
+    req.user = users[0]; // Attach user object to request
+    next();
+  } catch (error) {
+    console.error('Authentication error:', error);
+    res.status(500).json({ error: 'Authentication failed' });
+  }
+};
+
 // Ticket endpoints
-app.post('/api/tickets', async (req, res) => {
+app.post('/api/tickets', authenticateUser, async (req, res) => {
   try {
     const { subject, category, description } = req.body;
-    const userId = req.headers['user-id']; // You should implement proper authentication
 
-    if (!userId || !subject || !category || !description) {
+    if (!subject || !category || !description) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const [result] = await db.promise().query(
       'INSERT INTO tickets (user_id, subject, category, description) VALUES (?, ?, ?, ?)',
-      [userId, subject, category, description]
+      [req.user.id, subject, category, description]
     );
 
     res.json({
@@ -234,20 +259,14 @@ app.post('/api/tickets', async (req, res) => {
   }
 });
 
-app.get('/api/tickets', async (req, res) => {
+app.get('/api/tickets', authenticateUser, async (req, res) => {
   try {
-    const userId = req.headers['user-id']; // You should implement proper authentication
-
-    if (!userId) {
-      return res.status(401).json({ error: 'Authentication required' });
-    }
-
     const [tickets] = await db.promise().query(
       `SELECT id, subject, category, description, status, created_at, updated_at 
        FROM tickets 
        WHERE user_id = ? 
        ORDER BY created_at DESC`,
-      [userId]
+      [req.user.id]
     );
 
     res.json({ tickets });
@@ -257,19 +276,18 @@ app.get('/api/tickets', async (req, res) => {
   }
 });
 
-app.patch('/api/tickets/:id', async (req, res) => {
+app.patch('/api/tickets/:id', authenticateUser, async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
-    const userId = req.headers['user-id']; // You should implement proper authentication
 
-    if (!userId || !status) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    if (!status) {
+      return res.status(400).json({ error: 'Missing status field' });
     }
 
     const [result] = await db.promise().query(
       'UPDATE tickets SET status = ? WHERE id = ? AND user_id = ?',
-      [status, id, userId]
+      [status, id, req.user.id]
     );
 
     if (result.affectedRows === 0) {

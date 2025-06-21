@@ -174,9 +174,9 @@
         console.log('Response data:', data);
         
         if (response.ok) {
-          // Store user info in localStorage
-          localStorage.setItem('userId', data.userId);
-          localStorage.setItem('characterId', data.characterId);
+          // Store user info in sessionStorage for better security
+          sessionStorage.setItem('userId', data.userId);
+          sessionStorage.setItem('characterId', data.characterId);
           
           alert('Login successful!');
           console.log('Redirecting to dashboard...');
