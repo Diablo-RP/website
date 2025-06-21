@@ -21,6 +21,40 @@ body, html {
     background-color: var(--ash-black) !important;
 }
 
+/* Sign-in page styling */
+#signin-form input {
+    background-color: var(--ash-black);
+    border: 1px solid var(--burnt-gold);
+    color: var(--burnt-gold);
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    font-size: 1.1em;
+}
+
+#signin-form input::placeholder {
+    color: var(--burnt-gold);
+    opacity: 0.7;
+}
+
+#signin-form input:focus {
+    outline: none;
+    box-shadow: 0 0 10px var(--burnt-gold);
+    border-color: var(--burnt-gold);
+    background-color: var(--ash-black);
+    color: var(--burnt-gold);
+}
+
+#signin-form a {
+    color: var(--burnt-gold);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+#signin-form a:hover {
+    color: var(--blood-red);
+}
+
 /* Applications page styling */
 .contact-page.section {
     display: flex;
