@@ -827,7 +827,8 @@ Services Style
 */
 
 .features {
-  margin-top: -80px;
+  margin-top: 60px;
+  padding-top: 40px;
 }
 
 .features .item {
