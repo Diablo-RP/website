@@ -14,7 +14,7 @@ const db = mysql.createConnection({
   host: 'localhost',
   user: 'root', // Change these credentials
   password: '', // Change these credentials
-  database: 'rsg_dev'
+  database: 'Diablorp'
 });
 
 db.connect((err) => {
