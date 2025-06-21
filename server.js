@@ -147,9 +147,9 @@ app.get('/api/player-info', async (req, res) => {
     const [columns] = await db.promise().query('DESCRIBE players');
     console.log('Players table structure:', columns);
 
-    // Get user info from players table with all money columns
+    // Get user info from players table with money column
     const [players] = await db.promise().query(
-      'SELECT citizenid, money, bank, crypto FROM players LIMIT 1'
+      'SELECT citizenid, money FROM players LIMIT 1'
     );
     console.log('Query result:', players);
     
@@ -161,8 +161,8 @@ app.get('/api/player-info', async (req, res) => {
     res.json({
       citizenId: player.citizenid,
       cash: parseInt(player.money) || 0,
-      bank: parseInt(player.bank) || 0,
-      crypto: parseInt(player.crypto) || 0
+      bank: parseInt(player.money) || 0, // Using money for both since that's what we have
+      crypto: 0 // Default to 0 since we don't have this column
     });
   } catch (error) {
     console.error('Error fetching player info:', error);
