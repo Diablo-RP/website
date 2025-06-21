@@ -22,7 +22,18 @@ body, html {
 }
 
 /* Sign-in page styling */
-#signin-form input {
+#signin-form,
+#create-account-form {
+    font-family: 'Roboto', sans-serif;
+}
+
+#signin-form .section-heading-app h2,
+#create-account-form .section-heading-app h2 {
+    font-family: 'DiabloFont';
+}
+
+#signin-form input,
+#create-account-form input {
     background-color: var(--ash-black);
     border: 1px solid var(--burnt-gold);
     color: var(--burnt-gold);
