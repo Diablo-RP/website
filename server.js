@@ -115,15 +115,33 @@ db.connect((err) => {
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 const DISCORD_ADMIN_ROLE_ID = process.env.DISCORD_ADMIN_ROLE_ID;
 const DISCORD_MOD_ROLE_ID = process.env.DISCORD_MOD_ROLE_ID;
-const WEBSITE_URL = process.env.WEBSITE_URL || 'https://diablo-rp.com';
+const WEBSITE_URL = process.env.WEBSITE_URL || 'http://localhost:3001';
 
-const DISCORD_COLORS = {
-  new: 0x8b0000,     // Dark red
-  open: 0x00ff00,    // Green
-  in_progress: 0xffa500, // Orange
-  closed: 0xff0000,  // Red
-  response: 0x0099ff // Blue
+// Theme colors
+const COLORS = {
+  bloodRed: 0x8B0000,
+  ashBlack: 0x1C1C1C,
+  burntGold: 0xD4AF37,
+  darkGold: 0x8B7355
 };
+
+// Discord notification styling
+const DISCORD_COLORS = {
+  new: COLORS.bloodRed,      // Blood red for new tickets
+  open: COLORS.burntGold,    // Burnt gold for open tickets
+  in_progress: COLORS.darkGold, // Dark gold for in-progress
+  closed: COLORS.ashBlack,   // Ash black for closed tickets
+  response: COLORS.bloodRed  // Blood red for admin responses
+};
+
+// Function to create a styled field
+function createField(name, value, inline = false) {
+  return {
+    name: `**${name}**`,
+    value: value ? value : 'N/A',
+    inline: inline
+  };
+}
 
 // Function to send Discord notification
 async function sendDiscordNotification(type, data) {
@@ -133,50 +151,31 @@ async function sendDiscordNotification(type, data) {
     let embed = {
       color: DISCORD_COLORS[type],
       timestamp: new Date().toISOString(),
-      url: `${WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id}` // Link to ticket
+      url: `${WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id}`,
+      footer: {
+        text: `Ticket #${data.ticket.id} • Diablo County RP`,
+        icon_url: `${WEBSITE_URL}/assets/images/logo.png`
+      }
     };
 
-    // Add footer with ticket ID
-    embed.footer = {
-      text: `Ticket ID: #${data.ticket.id}`
-    };
-
-    let content = ''; // For role mentions
+    let content = '';
 
     switch (type) {
       case 'new':
-        content = DISCORD_ADMIN_ROLE_ID ? `<@&${DISCORD_ADMIN_ROLE_ID}> New ticket requires attention!` : '';
+        content = DISCORD_ADMIN_ROLE_ID ? `🚨 <@&${DISCORD_ADMIN_ROLE_ID}> New ticket requires attention!` : '';
         embed = {
           ...embed,
           title: '🎫 New Support Ticket',
+          description: `A new support ticket has been created and requires attention.\n\n**Quick Actions**\n• [View Ticket](${WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id})\n• [View All Tickets](${WEBSITE_URL}/admin-tickets.html)`,
           fields: [
-            {
-              name: 'Subject',
-              value: data.ticket.subject
-            },
-            {
-              name: 'Category',
-              value: data.ticket.category
-            },
-            {
-              name: 'Priority',
-              value: getPriorityEmoji(data.ticket.category) + ' ' + 
-                     getPriorityText(data.ticket.category)
-            },
-            {
-              name: 'Description',
-              value: data.ticket.description.length > 1024 ? 
-                data.ticket.description.substring(0, 1021) + '...' : 
-                data.ticket.description
-            },
-            {
-              name: 'Submitted By',
-              value: data.user.character_id
-            },
-            {
-              name: 'Quick Actions',
-              value: `[View Ticket](${WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id})`
-            }
+            createField('Subject', data.ticket.subject),
+            createField('Category', data.ticket.category, true),
+            createField('Priority', getPriorityText(data.ticket.category), true),
+            createField('Description', data.ticket.description.length > 1024 ? 
+              data.ticket.description.substring(0, 1021) + '...' : 
+              data.ticket.description),
+            createField('Submitted By', `\`${data.user.character_id}\``, true),
+            createField('Status', '`NEW`', true)
           ]
         };
         break;
@@ -185,28 +184,13 @@ async function sendDiscordNotification(type, data) {
         content = getStatusMention(data.newStatus);
         embed = {
           ...embed,
-          title: `🔄 Ticket Status Updated`,
+          title: `${getStatusEmoji(data.newStatus)} Status Update`,
+          description: `The status of ticket [#${data.ticket.id}](${WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id}) has been updated.`,
           fields: [
-            {
-              name: 'Ticket',
-              value: `[#${data.ticket.id}] ${data.ticket.subject}`
-            },
-            {
-              name: 'New Status',
-              value: getStatusEmoji(data.newStatus) + ' ' + data.newStatus.toUpperCase()
-            },
-            {
-              name: 'Previous Status',
-              value: getStatusEmoji(data.ticket.status) + ' ' + data.ticket.status.toUpperCase()
-            },
-            {
-              name: 'Updated By',
-              value: data.user.character_id
-            },
-            {
-              name: 'Quick Actions',
-              value: `[View Ticket](${WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id})`
-            }
+            createField('Ticket', data.ticket.subject),
+            createField('Previous Status', getStatusEmoji(data.ticket.status) + ' ' + data.ticket.status.toUpperCase(), true),
+            createField('New Status', getStatusEmoji(data.newStatus) + ' ' + data.newStatus.toUpperCase(), true),
+            createField('Updated By', `\`${data.user.character_id}\``, true)
           ]
         };
         break;
@@ -216,32 +200,17 @@ async function sendDiscordNotification(type, data) {
                  (DISCORD_MOD_ROLE_ID ? `<@&${DISCORD_MOD_ROLE_ID}> Ticket updated` : '');
         embed = {
           ...embed,
-          title: '💬 New Admin Response',
+          title: '💬 Admin Response',
+          description: `An admin has responded to ticket [#${data.ticket.id}](${WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id}).`,
           fields: [
-            {
-              name: 'Ticket',
-              value: `[#${data.ticket.id}] ${data.ticket.subject}`
-            },
-            {
-              name: 'Response',
-              value: data.response.length > 1024 ? 
-                data.response.substring(0, 1021) + '...' : 
-                data.response
-            },
-            {
-              name: 'Status',
-              value: data.newStatus ? 
-                getStatusEmoji(data.newStatus) + ' ' + data.newStatus.toUpperCase() : 
-                'Unchanged'
-            },
-            {
-              name: 'Admin',
-              value: data.user.character_id
-            },
-            {
-              name: 'Quick Actions',
-              value: `[View Ticket](${WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id})`
-            }
+            createField('Ticket', data.ticket.subject),
+            createField('Response', data.response.length > 1024 ? 
+              data.response.substring(0, 1021) + '...' : 
+              data.response),
+            createField('Status', data.newStatus ? 
+              getStatusEmoji(data.newStatus) + ' ' + data.newStatus.toUpperCase() : 
+              'Unchanged', true),
+            createField('Admin', `\`${data.user.character_id}\``, true)
           ]
         };
         break;
@@ -277,37 +246,38 @@ function getPriorityEmoji(category) {
 }
 
 function getPriorityText(category) {
+  const emoji = getPriorityEmoji(category);
   switch (category.toLowerCase()) {
     case 'player':
-      return 'HIGH - Player Report';
+      return `${emoji} HIGH - Player Report`;
     case 'technical':
-      return 'MEDIUM - Technical Issue';
+      return `${emoji} MEDIUM - Technical Issue`;
     case 'gameplay':
-      return 'NORMAL - Gameplay Issue';
+      return `${emoji} NORMAL - Gameplay Issue`;
     default:
-      return 'NORMAL - Other Issue';
+      return `${emoji} NORMAL - Other Issue`;
   }
 }
 
 function getStatusEmoji(status) {
   switch (status.toLowerCase()) {
     case 'open':
-      return '🟢';
+      return '🟡'; // Yellow for open
     case 'in_progress':
-      return '🟡';
+      return '🔶'; // Orange diamond for in progress
     case 'closed':
-      return '🔴';
+      return '🔴'; // Red for closed
     default:
-      return '⚪';
+      return '⚪'; // White for unknown
   }
 }
 
 function getStatusMention(status) {
   switch (status.toLowerCase()) {
     case 'open':
-      return DISCORD_ADMIN_ROLE_ID ? `<@&${DISCORD_ADMIN_ROLE_ID}> New ticket opened!` : '';
+      return DISCORD_ADMIN_ROLE_ID ? `🚨 <@&${DISCORD_ADMIN_ROLE_ID}> New ticket opened!` : '';
     case 'in_progress':
-      return DISCORD_MOD_ROLE_ID ? `<@&${DISCORD_MOD_ROLE_ID}> Ticket in progress` : '';
+      return DISCORD_MOD_ROLE_ID ? `⚡ <@&${DISCORD_MOD_ROLE_ID}> Ticket in progress` : '';
     case 'closed':
       return '';
     default:
