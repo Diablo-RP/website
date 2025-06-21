@@ -15,7 +15,7 @@ const dbConfig = {
   host: 'localhost',
   user: 'root',
   password: '',  // Leave empty if no password is set
-  database: 'Diablorp',
+  database: 'rsg_dev',
   port: 3306
 };
 
