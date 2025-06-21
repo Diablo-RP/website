@@ -65,6 +65,7 @@
                         <div id="playerInfo">
                           <p><strong>Character ID:</strong> <span id="characterId">Loading...</span></p>
                           <p><strong>Steam ID:</strong> <span id="steamId">Loading...</span></p>
+                          <p><strong>Account Status:</strong> <span id="accountStatus">Loading...</span></p>
                           <p><strong>Account Created:</strong> <span id="createdAt">Loading...</span></p>
                         </div>
                       </div>
@@ -106,7 +107,8 @@
           });
 
           if (!response.ok) {
-            // If not logged in, redirect to sign in page
+            const data = await response.json();
+            alert(data.error || 'Not logged in');
             window.location.href = 'signin.html';
             return;
           }
@@ -116,7 +118,22 @@
           // Update player info
           document.getElementById('characterId').textContent = data.characterId;
           document.getElementById('steamId').textContent = data.steamId;
+          document.getElementById('accountStatus').textContent = data.status.toUpperCase();
           document.getElementById('createdAt').textContent = new Date(data.createdAt).toLocaleDateString();
+          
+          // Style the status
+          const statusElement = document.getElementById('accountStatus');
+          switch(data.status) {
+            case 'approved':
+              statusElement.style.color = '#4CAF50';
+              break;
+            case 'pending':
+              statusElement.style.color = '#FFA500';
+              break;
+            case 'banned':
+              statusElement.style.color = '#FF0000';
+              break;
+          }
         } catch (error) {
           console.error('Error:', error);
           alert('Error loading player information');
