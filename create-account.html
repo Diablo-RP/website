@@ -145,13 +145,12 @@
       
       try {
         console.log('Sending registration request...');
-        const response = await fetch('/api/register', {
+        const response = await fetch('http://localhost:3001/api/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ steamId, password }),
-          credentials: 'include'
+          body: JSON.stringify({ steamId, password })
         });
         
         console.log('Response status:', response.status);
@@ -159,14 +158,14 @@
         console.log('Response data:', data);
         
         if (response.ok) {
-          alert(`Account created successfully!\nYour Character ID is: ${data.characterId}\nPlease save this ID as you will need it to sign in.`);
+          alert(`Account created successfully! Your Character ID is: ${data.characterId}\nPlease save this ID as you will need it to sign in.`);
           window.location.href = 'signin.html';
         } else {
           alert(data.error || 'Error creating account');
         }
       } catch (error) {
         console.error('Error:', error);
-        alert('Error creating account. Please check the console for details.');
+        alert('Error creating account');
       }
     }
   </script>
