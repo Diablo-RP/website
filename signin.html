@@ -149,8 +149,13 @@
         console.log('Response data:', data);
         
         if (response.ok) {
+          // Store user info in localStorage
+          localStorage.setItem('userId', data.userId);
+          localStorage.setItem('characterId', data.characterId);
+          
           alert('Login successful!');
-          window.location.href = 'player-dashboard.html';
+          console.log('Redirecting to dashboard...');
+          window.location.replace('player-dashboard.html');
         } else {
           alert(data.error || 'Invalid character ID or password');
         }

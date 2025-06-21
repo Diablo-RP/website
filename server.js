@@ -92,9 +92,13 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Login
+// Login endpoint
 app.post('/api/login', async (req, res) => {
   const { characterId, password } = req.body;
+  
+  if (!characterId || !password) {
+    return res.status(400).json({ error: 'Please provide both character ID and password' });
+  }
   
   try {
     // Find user by character ID
@@ -115,7 +119,12 @@ app.post('/api/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid character ID or password' });
     }
     
-    res.json({ message: 'Login successful' });
+    // Return user info
+    res.json({ 
+      message: 'Login successful',
+      userId: user.id,
+      characterId: user.character_id
+    });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Error during login' });
@@ -125,7 +134,7 @@ app.post('/api/login', async (req, res) => {
 // Get player info
 app.get('/api/player-info', async (req, res) => {
   try {
-    // For demo, return the last created user dfc
+    // Get user info from database
     const [users] = await db.promise().query(
       'SELECT steam_id, character_id, created_at FROM users ORDER BY created_at DESC LIMIT 1'
     );
