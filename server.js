@@ -113,37 +113,100 @@ db.connect((err) => {
 
 // Discord webhook configuration
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
+const DISCORD_COLORS = {
+  new: 0x8b0000,     // Dark red
+  open: 0x00ff00,    // Green
+  in_progress: 0xffa500, // Orange
+  closed: 0xff0000,  // Red
+  response: 0x0099ff // Blue
+};
 
 // Function to send Discord notification
-async function sendDiscordNotification(ticket, user) {
+async function sendDiscordNotification(type, data) {
   if (!DISCORD_WEBHOOK_URL) return;
 
   try {
-    const embed = {
-      title: '🎫 New Support Ticket',
-      color: 0x8b0000, // Dark red color
-      fields: [
-        {
-          name: 'Subject',
-          value: ticket.subject
-        },
-        {
-          name: 'Category',
-          value: ticket.category
-        },
-        {
-          name: 'Description',
-          value: ticket.description.length > 1024 ? 
-            ticket.description.substring(0, 1021) + '...' : 
-            ticket.description
-        },
-        {
-          name: 'Submitted By',
-          value: user.character_id
-        }
-      ],
+    let embed = {
+      color: DISCORD_COLORS[type],
       timestamp: new Date().toISOString()
     };
+
+    switch (type) {
+      case 'new':
+        embed = {
+          ...embed,
+          title: '🎫 New Support Ticket',
+          fields: [
+            {
+              name: 'Subject',
+              value: data.ticket.subject
+            },
+            {
+              name: 'Category',
+              value: data.ticket.category
+            },
+            {
+              name: 'Description',
+              value: data.ticket.description.length > 1024 ? 
+                data.ticket.description.substring(0, 1021) + '...' : 
+                data.ticket.description
+            },
+            {
+              name: 'Submitted By',
+              value: data.user.character_id
+            }
+          ]
+        };
+        break;
+
+      case 'status':
+        embed = {
+          ...embed,
+          title: `🔄 Ticket Status Updated`,
+          fields: [
+            {
+              name: 'Ticket',
+              value: data.ticket.subject
+            },
+            {
+              name: 'New Status',
+              value: data.newStatus.toUpperCase()
+            },
+            {
+              name: 'Updated By',
+              value: data.user.character_id
+            }
+          ]
+        };
+        break;
+
+      case 'response':
+        embed = {
+          ...embed,
+          title: '💬 New Admin Response',
+          fields: [
+            {
+              name: 'Ticket',
+              value: data.ticket.subject
+            },
+            {
+              name: 'Response',
+              value: data.response.length > 1024 ? 
+                data.response.substring(0, 1021) + '...' : 
+                data.response
+            },
+            {
+              name: 'Status',
+              value: data.newStatus ? data.newStatus.toUpperCase() : 'Unchanged'
+            },
+            {
+              name: 'Admin',
+              value: data.user.character_id
+            }
+          ]
+        };
+        break;
+    }
 
     await fetch(DISCORD_WEBHOOK_URL, {
       method: 'POST',
@@ -385,7 +448,10 @@ app.post('/api/tickets', authenticateUser, async (req, res) => {
 
     if (tickets.length > 0) {
       // Send Discord notification
-      await sendDiscordNotification(tickets[0], req.user);
+      await sendDiscordNotification('new', {
+        ticket: tickets[0],
+        user: req.user
+      });
     }
 
     res.json({ 
@@ -424,19 +490,28 @@ app.patch('/api/tickets/:id', authenticateUser, async (req, res) => {
       return res.status(400).json({ error: 'Missing status field' });
     }
 
-    const [result] = await db.promise().query(
+    // Update the ticket
+    await db.promise().query(
       'UPDATE tickets SET status = ? WHERE id = ? AND user_id = ?',
       [status, id, req.user.id]
     );
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'Ticket not found or unauthorized' });
+    // Get updated ticket
+    const [tickets] = await db.promise().query(
+      'SELECT * FROM tickets WHERE id = ?',
+      [id]
+    );
+
+    if (tickets.length > 0) {
+      // Send Discord notification
+      await sendDiscordNotification('status', {
+        ticket: tickets[0],
+        newStatus: status,
+        user: req.user
+      });
     }
 
-    res.json({
-      success: true,
-      message: 'Ticket status updated successfully'
-    });
+    res.json({ success: true });
   } catch (error) {
     console.error('Error updating ticket:', error);
     res.status(500).json({ error: 'Failed to update ticket' });
@@ -514,7 +589,7 @@ app.post('/api/admin/tickets/:id/respond', authenticateAdmin, async (req, res) =
         [id, req.user.id, response]
       );
 
-      // Update ticket status
+      // Update ticket status if provided
       if (status) {
         await connection.query(
           'UPDATE tickets SET status = ? WHERE id = ?',
@@ -522,17 +597,23 @@ app.post('/api/admin/tickets/:id/respond', authenticateAdmin, async (req, res) =
         );
       }
 
-      // Get user's email if notification requested
-      if (sendEmail) {
-        const [tickets] = await connection.query(
-          `SELECT u.email, t.subject 
-           FROM tickets t 
-           JOIN users u ON t.user_id = u.id 
-           WHERE t.id = ?`,
-          [id]
-        );
+      // Get the ticket details
+      const [tickets] = await connection.query(
+        'SELECT t.*, u.email, u.character_id FROM tickets t JOIN users u ON t.user_id = u.id WHERE t.id = ?',
+        [id]
+      );
 
-        if (tickets.length > 0 && tickets[0].email) {
+      if (tickets.length > 0) {
+        // Send Discord notification
+        await sendDiscordNotification('response', {
+          ticket: tickets[0],
+          response,
+          newStatus: status,
+          user: req.user
+        });
+
+        // Send email if requested
+        if (sendEmail && tickets[0].email) {
           await sendTicketEmail(
             tickets[0].email,
             `Ticket Update: ${tickets[0].subject}`,
@@ -542,7 +623,7 @@ app.post('/api/admin/tickets/:id/respond', authenticateAdmin, async (req, res) =
               <div style="background: #f5f5f5; padding: 15px; margin: 10px 0;">
                 ${response}
               </div>
-              <p>Current status: ${status}</p>
+              <p>Current status: ${status || tickets[0].status}</p>
               <p>You can view the full ticket details by logging into your account.</p>
             `
           );
