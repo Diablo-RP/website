@@ -93,13 +93,43 @@
     <div class="container mt-5 pt-5">
       <h1 class="admin-title">Ticket Management</h1>
       
+      <!-- Ticket Stats -->
+      <div class="ticket-stats mb-4">
+        <div class="row">
+          <div class="col-md-3">
+            <div class="stat-card bg-dark p-3 rounded">
+              <h4 class="text-warning mb-0" id="openCount">0</h4>
+              <p class="text-white-50 mb-0">Open Tickets</p>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="stat-card bg-dark p-3 rounded">
+              <h4 class="text-info mb-0" id="inProgressCount">0</h4>
+              <p class="text-white-50 mb-0">In Progress</p>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="stat-card bg-dark p-3 rounded">
+              <h4 class="text-success mb-0" id="closedCount">0</h4>
+              <p class="text-white-50 mb-0">Closed Today</p>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="stat-card bg-dark p-3 rounded">
+              <h4 class="text-danger mb-0" id="urgentCount">0</h4>
+              <p class="text-white-50 mb-0">Urgent Reports</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <!-- Ticket Filters -->
       <div class="ticket-filters">
         <div class="row">
-          <div class="col-md-3">
+          <div class="col-md-2">
             <div class="form-group">
               <label class="text-white">Status</label>
-              <select class="form-control" id="statusFilter">
+              <select class="form-control custom-select" id="statusFilter">
                 <option value="">All</option>
                 <option value="open">Open</option>
                 <option value="in_progress">In Progress</option>
@@ -107,10 +137,10 @@
               </select>
             </div>
           </div>
-          <div class="col-md-3">
+          <div class="col-md-2">
             <div class="form-group">
               <label class="text-white">Category</label>
-              <select class="form-control" id="categoryFilter">
+              <select class="form-control custom-select" id="categoryFilter">
                 <option value="">All</option>
                 <option value="technical">Technical</option>
                 <option value="gameplay">Gameplay</option>
@@ -119,16 +149,35 @@
               </select>
             </div>
           </div>
+          <div class="col-md-2">
+            <div class="form-group">
+              <label class="text-white">Sort By</label>
+              <select class="form-control custom-select" id="sortFilter">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="priority">Priority</option>
+              </select>
+            </div>
+          </div>
           <div class="col-md-4">
             <div class="form-group">
               <label class="text-white">Search</label>
-              <input type="text" class="form-control" id="searchFilter" placeholder="Search tickets...">
+              <div class="input-group">
+                <input type="text" class="form-control" id="searchFilter" placeholder="Search tickets...">
+                <div class="input-group-append">
+                  <button class="btn btn-outline-light" type="button" onclick="clearSearch()">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
           <div class="col-md-2">
             <div class="form-group">
               <label class="text-white">&nbsp;</label>
-              <button class="btn btn-primary form-control" onclick="applyFilters()">Apply</button>
+              <button class="btn btn-primary form-control" onclick="applyFilters()">
+                <i class="fas fa-filter"></i> Filter
+              </button>
             </div>
           </div>
         </div>
@@ -142,10 +191,10 @@
       </div>
     </div>
 
-    <!-- Ticket Response Modal -->
-    <div class="modal fade" id="responseModal" tabindex="-1">
+    <!-- Response Modal -->
+    <div class="modal fade" id="responseModal">
       <div class="modal-dialog modal-lg">
-        <div class="modal-content bg-dark">
+        <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title text-white">Respond to Ticket</h5>
             <button type="button" class="close text-white" data-dismiss="modal">
@@ -153,23 +202,35 @@
             </button>
           </div>
           <div class="modal-body">
+            <div class="ticket-preview mb-4 p-3 rounded bg-dark">
+              <h6 class="text-white mb-2">Ticket Details</h6>
+              <div id="modalTicketDetails"></div>
+            </div>
             <div id="editor"></div>
             <div class="form-group mt-3">
               <label class="text-white">Update Status</label>
-              <select class="form-control" id="ticketStatus">
+              <select class="form-control custom-select" id="ticketStatus">
                 <option value="open">Open</option>
                 <option value="in_progress">In Progress</option>
                 <option value="closed">Closed</option>
               </select>
             </div>
             <div class="form-check mt-3">
-              <input type="checkbox" class="form-check-input" id="sendEmail">
+              <input type="checkbox" class="form-check-input" id="sendEmail" checked>
               <label class="form-check-label text-white">Send email notification to user</label>
+            </div>
+            <div class="response-templates mt-3">
+              <label class="text-white d-block">Quick Response Templates</label>
+              <button class="btn btn-sm btn-outline-light mr-2" onclick="insertTemplate('acknowledge')">Acknowledgment</button>
+              <button class="btn btn-sm btn-outline-light mr-2" onclick="insertTemplate('progress')">Progress Update</button>
+              <button class="btn btn-sm btn-outline-light" onclick="insertTemplate('close')">Closing Response</button>
             </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary" onclick="submitResponse()">Submit Response</button>
+            <button type="button" class="btn btn-primary" onclick="submitResponse()">
+              <i class="fas fa-paper-plane"></i> Submit Response
+            </button>
           </div>
         </div>
       </div>
@@ -179,6 +240,7 @@
     <script src="vendor/jquery/jquery.min.js"></script>
     <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script src="https://kit.fontawesome.com/your-kit-code.js"></script>
     <script>
       let quill;
       let currentTicketId;
@@ -367,6 +429,21 @@
             }
           }
         });
+      }
+
+      function insertTemplate(templateName) {
+        const templates = {
+          acknowledge: 'Thank you for reporting this issue. We will look into it as soon as possible.',
+          progress: 'We are currently working on resolving this issue. Thank you for your patience.',
+          close: 'This issue has been resolved. Thank you for your patience and cooperation.'
+        };
+
+        quill.setText(templates[templateName]);
+      }
+
+      function clearSearch() {
+        $('#searchFilter').val('');
+        applyFilters();
       }
     </script>
   </body>
