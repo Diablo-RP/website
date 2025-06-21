@@ -1,6 +1,9 @@
+/* Import Cinzel font */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap');
+
 @font-face {
-    font-family: 'DiabloFont';
-    src: url('https://db.onlinewebfonts.com/t/97c4b25dc74e0ab045154e75a8fdd69d.woff2') format('woff2');
+    font-family: 'Cinzel';
+    src: url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap') format('woff2');
     font-weight: normal;
     font-style: normal;
 }
@@ -16,7 +19,8 @@
 
 /* Global font styles */
 body, html {
-    font-family: 'DiabloFont' !important;
+    font-family: 'Cinzel', serif !important;
+    font-weight: 400;
     color: var(--burnt-gold);
     background-color: var(--ash-black) !important;
 }
@@ -29,7 +33,9 @@ body, html {
 
 #signin-form .section-heading-app h2,
 #create-account-form .section-heading-app h2 {
-    font-family: 'DiabloFont';
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    letter-spacing: 0.5px;
 }
 
 #signin-form input,
@@ -285,28 +291,28 @@ body, html {
     background-color: var(--ash-black);
 }
 
-/* Apply DiabloFont to all headings */
+/* Apply Cinzel to all headings */
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'DiabloFont' !important;
+    font-family: 'Cinzel', serif !important;
     color: var(--burnt-gold) !important;
     text-shadow: var(--text-shadow) !important;
 }
 
 /* Style all text elements */
 p, span, div, li, a {
-    font-family: 'DiabloFont' !important;
+    font-family: 'Cinzel', serif !important;
     color: var(--burnt-gold);
 }
 
-/* Apply DiabloFont to navigation */
+/* Apply Cinzel to navigation */
 .header-area .main-nav .nav li a {
-    font-family: 'DiabloFont' !important;
+    font-family: 'Cinzel', serif !important;
     color: var(--burnt-gold) !important;
 }
 
 /* Style buttons */
 .main-button a, .btn-primary {
-    font-family: 'DiabloFont' !important;
+    font-family: 'Cinzel', serif !important;
     background-color: var(--blood-red) !important;
     color: var(--burnt-gold) !important;
     border-color: var(--burnt-gold) !important;
@@ -314,18 +320,18 @@ p, span, div, li, a {
 
 /* Style section headings */
 .section-heading h6 {
-    font-family: 'DiabloFont' !important;
+    font-family: 'Cinzel', serif !important;
     color: var(--dark-gold) !important;
 }
 
 .section-heading h4 {
-    font-family: 'DiabloFont' !important;
+    font-family: 'Cinzel', serif !important;
     color: var(--burnt-gold) !important;
 }
 
 /* Style form elements */
 input, textarea, select {
-    font-family: 'DiabloFont' !important;
+    font-family: 'Cinzel', serif !important;
     color: var(--burnt-gold) !important;
     background-color: var(--ash-black) !important;
     border: 1px solid var(--burnt-gold) !important;
