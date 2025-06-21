@@ -13,10 +13,10 @@ app.use(express.static('.')); // Serve static files
 // Database configuration
 const dbConfig = {
   host: 'localhost',
-  user: 'root', // Change these credentials
-  password: '', // Change these credentials
+  user: 'root',
+  password: '',  // Leave empty if no password is set
   database: 'Diablorp',
-  port: 3306 // Default MySQL port
+  port: 3306
 };
 
 console.log('Attempting to connect to database with config:', dbConfig);
