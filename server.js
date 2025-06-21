@@ -503,6 +503,17 @@ app.get('/api/player-info', authenticateUser, async (req, res) => {
     console.log('Player info request received');
     console.log('Character ID:', req.headers['character-id']);
     
+    // First get the citizenid from users table
+    const [users] = await db.promise().query(
+      'SELECT character_id FROM users WHERE character_id = ?',
+      [req.headers['character-id']]
+    );
+    console.log('Found user:', users[0]);
+
+    if (users.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
     // Get player info from the players table
     const query = `
       SELECT p.citizenid, p.money, p.charinfo, COALESCE(v.amount, 0) as vip_coins 
@@ -511,9 +522,9 @@ app.get('/api/player-info', authenticateUser, async (req, res) => {
       WHERE p.citizenid = ?`;
     
     console.log('Executing query:', query);
-    console.log('With params:', [req.headers['character-id']]);
+    console.log('With params:', [users[0].character_id]);
     
-    const [players] = await db.promise().query(query, [req.headers['character-id']]);
+    const [players] = await db.promise().query(query, [users[0].character_id]);
     console.log('Query result:', players);
 
     if (players.length === 0) {
