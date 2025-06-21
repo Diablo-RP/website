@@ -128,6 +128,11 @@
     <!-- Scripts -->
     <script src="vendor/jquery/jquery.min.js"></script>
     <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/isotope.min.js"></script>
+    <script src="assets/js/owl-carousel.js"></script>
+    <script src="assets/js/counter.js"></script>
+    <script src="assets/js/custom.js"></script>
+
     <script>
       $(document).ready(function() {
         // Check authentication
@@ -274,6 +279,35 @@
 
         // Initial load
         loadTickets();
+      });
+
+      function updateNavigation() {
+        const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+        const nav = document.querySelector('.main-nav .nav');
+        
+        // Remove existing admin tickets link if it exists
+        const existingAdminLink = nav.querySelector('li a[href="admin-tickets.html"]');
+        if (existingAdminLink) {
+          existingAdminLink.parentElement.remove();
+        }
+
+        // Add admin tickets link if user is admin
+        if (isAdmin) {
+          const supportLink = nav.querySelector('li a[href="tickets.html"]').parentElement;
+          const adminLink = document.createElement('li');
+          adminLink.innerHTML = '<a href="admin-tickets.html">Admin Tickets</a>';
+          nav.insertBefore(adminLink, supportLink.nextSibling);
+        }
+      }
+
+      // Check authentication and update navigation on page load
+      document.addEventListener('DOMContentLoaded', function() {
+        const characterId = sessionStorage.getItem('characterId');
+        if (!characterId) {
+          window.location.href = 'signin.html';
+          return;
+        }
+        updateNavigation();
       });
     </script>
   </body>
