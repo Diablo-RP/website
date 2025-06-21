@@ -134,20 +134,19 @@ app.post('/api/login', async (req, res) => {
 // Get player info
 app.get('/api/player-info', async (req, res) => {
   try {
-    // Get user info from database
-    const [users] = await db.promise().query(
-      'SELECT steam_id, character_id, created_at FROM users ORDER BY created_at DESC LIMIT 1'
+    // Get user info from players table
+    const [players] = await db.promise().query(
+      'SELECT citizenid, money FROM players ORDER BY citizenid DESC LIMIT 1'
     );
     
-    if (users.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+    if (players.length === 0) {
+      return res.status(404).json({ error: 'Player not found' });
     }
     
-    const user = users[0];
+    const player = players[0];
     res.json({
-      steamId: user.steam_id,
-      characterId: user.character_id,
-      createdAt: user.created_at
+      citizenId: player.citizenid,
+      money: player.money
     });
   } catch (error) {
     console.error('Error fetching player info:', error);
