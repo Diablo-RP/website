@@ -136,13 +136,12 @@
       
       try {
         console.log('Sending login request...');
-        const response = await fetch('/api/login', {
+        const response = await fetch('http://localhost:3001/api/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ characterId, password }),
-          credentials: 'include'
+          body: JSON.stringify({ characterId, password })
         });
         
         console.log('Response status:', response.status);
@@ -151,13 +150,13 @@
         
         if (response.ok) {
           alert('Login successful!');
-          window.location.href = 'player-dashboard.html';
+          window.location.href = 'index.html';
         } else {
           alert(data.error || 'Invalid character ID or password');
         }
       } catch (error) {
         console.error('Error:', error);
-        alert('Error during login. Please check the console for details.');
+        alert('Error during login');
       }
     }
   </script>
