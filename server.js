@@ -161,8 +161,7 @@ app.get('/api/player-info', async (req, res) => {
     res.json({
       citizenId: player.citizenid,
       cash: parseInt(player.money) || 0,
-      bank: parseInt(player.money) || 0, // Using money for both since that's what we have
-      crypto: 0 // Default to 0 since we don't have this column
+      bank: parseInt(player.money) || 0 // Using money for both since that's what we have
     });
   } catch (error) {
     console.error('Error fetching player info:', error);
