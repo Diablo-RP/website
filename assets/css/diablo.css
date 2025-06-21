@@ -61,10 +61,17 @@ body, html {
     color: var(--burnt-gold);
 }
 
-#signin-form a {
+#signin-form a,
+#create-account-form a,
+#signin-form p,
+#create-account-form p,
+#signin-form small,
+#create-account-form small {
     color: var(--burnt-gold);
     text-decoration: none;
     transition: color 0.3s ease;
+    text-transform: none;
+    font-family: Arial, Helvetica, sans-serif !important;
 }
 
 #signin-form a:hover {
