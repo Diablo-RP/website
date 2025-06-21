@@ -500,39 +500,56 @@ app.post('/api/login', async (req, res) => {
 // Player info endpoint
 app.get('/api/player-info', authenticateUser, async (req, res) => {
   try {
+    console.log('Player info request received');
+    console.log('Character ID:', req.headers['character-id']);
+    
     // Get player info from the players table
-    const [players] = await db.promise().query(
-      'SELECT citizenid, money, charinfo, COALESCE(v.amount, 0) as vip_coins ' +
-      'FROM players p ' +
-      'LEFT JOIN cas_vip_coin v ON v.identifier = p.citizenid ' +
-      'WHERE p.citizenid = ?',
-      [req.headers['character-id']]
-    );
+    const query = `
+      SELECT p.citizenid, p.money, p.charinfo, COALESCE(v.amount, 0) as vip_coins 
+      FROM players p 
+      LEFT JOIN cas_vip_coin v ON v.identifier = p.citizenid 
+      WHERE p.citizenid = ?`;
+    
+    console.log('Executing query:', query);
+    console.log('With params:', [req.headers['character-id']]);
+    
+    const [players] = await db.promise().query(query, [req.headers['character-id']]);
+    console.log('Query result:', players);
 
     if (players.length === 0) {
+      console.log('No player found');
       return res.status(404).json({ error: 'Player not found' });
     }
 
     const player = players[0];
-    const moneyData = JSON.parse(player.money);
-    const charInfo = JSON.parse(player.charinfo);
+    console.log('Raw player data:', player);
+    
+    try {
+      const moneyData = JSON.parse(player.money || '{}');
+      const charInfo = JSON.parse(player.charinfo || '{}');
+      console.log('Parsed money data:', moneyData);
+      console.log('Parsed char info:', charInfo);
 
-    res.json({
-      citizenId: player.citizenid,
-      firstName: charInfo.firstname,
-      lastName: charInfo.lastname,
-      vipCoins: parseInt(player.vip_coins) || 0,
-      cash: parseFloat(moneyData.cash) || 0,
-      valBank: parseFloat(moneyData.valbank) || 0,
-      armBank: parseFloat(moneyData.armbank) || 0,
-      rhoBank: parseFloat(moneyData.rhobank) || 0,
-      blkBank: parseFloat(moneyData.blkbank) || 0,
-      bank: parseFloat(moneyData.bank) || 0,
-      bloodMoney: parseFloat(moneyData.bloodmoney) || 0
-    });
+      res.json({
+        citizenId: player.citizenid,
+        firstName: charInfo.firstname || '',
+        lastName: charInfo.lastname || '',
+        vipCoins: parseInt(player.vip_coins) || 0,
+        cash: parseFloat(moneyData.cash) || 0,
+        valBank: parseFloat(moneyData.valbank) || 0,
+        armBank: parseFloat(moneyData.armbank) || 0,
+        rhoBank: parseFloat(moneyData.rhobank) || 0,
+        blkBank: parseFloat(moneyData.blkbank) || 0,
+        bank: parseFloat(moneyData.bank) || 0,
+        bloodMoney: parseFloat(moneyData.bloodmoney) || 0
+      });
+    } catch (parseError) {
+      console.error('Error parsing player data:', parseError);
+      res.status(500).json({ error: 'Error parsing player data', details: parseError.message });
+    }
   } catch (error) {
     console.error('Error fetching player info:', error);
-    res.status(500).json({ error: 'Failed to fetch player info' });
+    res.status(500).json({ error: 'Failed to fetch player info', details: error.message });
   }
 });
 
