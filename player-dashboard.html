@@ -203,6 +203,90 @@
       </div>
     </div>
 
+    <style>
+      .money-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        padding: 1rem;
+      }
+      
+      .money-box {
+        background: rgba(28, 28, 28, 0.95);
+        border: 2px solid #8B0000;
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+      }
+      
+      .money-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(139, 0, 0, 0.3);
+      }
+      
+      .money-label {
+        color: #D4AF37;
+        font-size: 1.2em;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+      
+      .money-value {
+        color: #fff;
+        font-size: 1.8em;
+        font-weight: bold;
+      }
+
+      .money-value.positive {
+        color: #32CD32;
+      }
+
+      .money-value.negative {
+        color: #FF4136;
+      }
+
+      .money-total {
+        grid-column: 1 / -1;
+        background: linear-gradient(45deg, #1C1C1C, #2C2C2C);
+        border: 2px solid #D4AF37;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        border-radius: 8px;
+        text-align: center;
+      }
+
+      .money-total .money-label {
+        font-size: 1.4em;
+        color: #8B7355;
+      }
+
+      .money-total .money-value {
+        font-size: 2.2em;
+        color: #D4AF37;
+      }
+
+      .vip-coins {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(45deg, #8B0000, #D4AF37);
+        padding: 0.8rem 1.5rem;
+        border-radius: 25px;
+        color: white;
+        font-size: 1.2em;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      }
+
+      .vip-coins i {
+        color: #FFD700;
+      }
+    </style>
+
     <script>
       // Check authentication on page load
       document.addEventListener('DOMContentLoaded', function() {
@@ -225,7 +309,8 @@
           success: function(character) {
             console.log('Received character:', character);
             const container = $('#characters-container');
-            
+            container.empty();
+
             const characterDiv = $('<div>').addClass('character-card mb-4');
             
             // Character name section
@@ -239,39 +324,52 @@
 
             // Money grid
             const moneyGrid = $('<div>').addClass('money-grid');
-            
-            // Add money boxes
             const moneyBoxes = [
               { label: 'Cash', value: character.cash },
               { label: 'Valentine Bank', value: character.valBank },
               { label: 'Armadillo Bank', value: character.armBank },
               { label: 'Rhodes Bank', value: character.rhoBank },
               { label: 'Blackwater Bank', value: character.blkBank },
-              { label: 'Bank', value: character.bank },
               { label: 'Blood Money', value: character.bloodMoney }
             ];
 
+            // Calculate total money
+            const totalMoney = moneyBoxes.reduce((sum, box) => sum + (parseFloat(box.value) || 0), 0);
+
             moneyBoxes.forEach(box => {
               if (typeof box.value !== 'undefined') {
+                const value = parseFloat(box.value);
                 const moneyBox = $(`
                   <div class="money-box">
                     <div class="money-label">${box.label}</div>
-                    <div class="money-value">$${(parseFloat(box.value) || 0).toFixed(2)}</div>
+                    <div class="money-value ${value >= 0 ? 'positive' : 'negative'}">
+                      $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </div>
                   </div>
                 `);
                 moneyGrid.append(moneyBox);
               }
             });
 
+            // Add total money box
+            moneyGrid.append(`
+              <div class="money-total">
+                <div class="money-label">Total Net Worth</div>
+                <div class="money-value ${totalMoney >= 0 ? 'positive' : 'negative'}">
+                  $${totalMoney.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+              </div>
+            `);
+
             characterDiv.append(moneyGrid);
             container.append(characterDiv);
 
-            // Add VIP coins display
-            if ($('.vip-coins').length === 0) { // Only add if not already present
+            // Add VIP coins display if they exist
+            if (character.vipCoins) {
               $('body').append(`
                 <div class="vip-coins">
                   <i class="fa fa-crown"></i>
-                  <span>${character.vipCoins || 0} VIP Coins</span>
+                  <span>${character.vipCoins.toLocaleString()} VIP Coins</span>
                 </div>
               `);
             }
@@ -294,16 +392,8 @@
       function updateNavigation() {
         const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
         const nav = document.querySelector('.main-nav .nav');
-        
-        // Remove existing admin tickets link if it exists
-        const existingAdminLink = nav.querySelector('li a[href="admin-tickets.html"]');
-        if (existingAdminLink) {
-          existingAdminLink.parentElement.remove();
-        }
-
-        // Add admin tickets link if user is admin
-        if (isAdmin) {
-          const supportLink = nav.querySelector('li a[href="tickets.html"]').parentElement;
+        if (isAdmin && nav) {
+          const supportLink = nav.querySelector('a[href="tickets.html"]').parentElement;
           const adminLink = document.createElement('li');
           adminLink.innerHTML = '<a href="admin-tickets.html">Admin Tickets</a>';
           nav.insertBefore(adminLink, supportLink.nextSibling);
@@ -318,45 +408,6 @@
         color: #fff;
         margin-bottom: 30px;
         padding: 25px;
-      }
-      .money-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
-        margin-top: 20px;
-      }
-      .money-box {
-        background: rgba(139, 0, 0, 0.3);
-        border: 1px solid #8b0000;
-        padding: 15px;
-        border-radius: 8px;
-        text-align: center;
-      }
-      .money-label {
-        color: #ffd700;
-        font-size: 1.4em;
-        margin-bottom: 10px;
-      }
-      .money-value {
-        color: #fff;
-        font-size: 1.6em;
-        font-weight: bold;
-      }
-      .vip-coins {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: rgba(139, 0, 0, 0.9);
-        color: #ffd700;
-        padding: 15px 25px;
-        border-radius: 10px;
-        font-size: 1.8em;
-        font-weight: bold;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        z-index: 1000;
-      }
-      .vip-coins i {
-        margin-right: 8px;
       }
     </style>
 
