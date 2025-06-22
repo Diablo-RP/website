@@ -612,6 +612,7 @@ app.get('/api/player-info', authenticateUser, async (req, res) => {
         armBank: parseFloat(moneyData.armbank) || 0,
         rhoBank: parseFloat(moneyData.rhobank) || 0,
         blkBank: parseFloat(moneyData.blkbank) || 0,
+        bank: parseFloat(moneyData.bank) || 0,
         bloodMoney: parseFloat(moneyData.bloodmoney) || 0
       });
     } catch (parseError) {
@@ -841,6 +842,79 @@ app.post('/api/admin/tickets/:id/respond', authenticateAdmin, async (req, res) =
   } catch (error) {
     console.error('Error responding to ticket:', error);
     res.status(500).json({ error: 'Failed to respond to ticket' });
+  }
+});
+
+// Authentication check endpoint
+app.get('/api/check-auth', (req, res) => {
+  if (!req.session || !req.session.user) {
+    return res.json({ isAuthenticated: false });
+  }
+  res.json({ isAuthenticated: true });
+});
+
+// Process subscription endpoint
+app.post('/api/process-subscription', async (req, res) => {
+  // Check if user is authenticated
+  if (!req.session || !req.session.user) {
+    return res.status(401).json({ 
+      success: false, 
+      message: 'You must be logged in to subscribe' 
+    });
+  }
+
+  try {
+    const { subscriptionID, tier } = req.body;
+    const userId = req.session.user.id;
+
+    // Verify subscription with PayPal
+    const response = await fetch(`${PAYPAL_API}/v1/billing/subscriptions/${subscriptionID}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Basic ${Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const data = await response.json();
+    
+    if (data.status === 'ACTIVE') {
+      // Check if user already has an active subscription
+      const [existingSub] = await db.promise().query(
+        'SELECT * FROM subscriptions WHERE user_id = ? AND status = ?',
+        [userId, 'active']
+      );
+
+      if (existingSub.length > 0) {
+        // Update existing subscription
+        await db.promise().query(
+          'UPDATE subscriptions SET status = ? WHERE user_id = ? AND status = ?',
+          ['cancelled', userId, 'active']
+        );
+      }
+
+      // Insert new subscription
+      await db.promise().query(
+        'INSERT INTO subscriptions (subscription_id, user_id, tier, status) VALUES (?, ?, ?, ?)',
+        [subscriptionID, userId, tier, 'active']
+      );
+
+      res.json({ 
+        success: true, 
+        message: 'Subscription processed successfully' 
+      });
+    } else {
+      res.status(400).json({ 
+        success: false, 
+        message: 'Subscription activation failed' 
+      });
+    }
+  } catch (error) {
+    console.error('Subscription processing error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error processing subscription' 
+    });
   }
 });
 

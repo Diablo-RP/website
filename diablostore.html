@@ -410,80 +410,182 @@ https://templatemo.com/tm-589-lugx-gaming
 
   <!-- PayPal Integration -->
   <script>
-    paypal.Buttons({
-      style: {
-        shape: 'pill',
-        color: 'gold',
-        layout: 'vertical',
-        label: 'subscribe'
-      },
-      createSubscription: function(data, actions) {
-        return actions.subscription.create({
-          /* Creates the subscription */
-          plan_id: 'P-12C37749GW472581DNBLUGHA'
-        });
-      },
-      onApprove: function(data, actions) {
-        // Send subscription data to our server
-        return fetch('/api/process-subscription', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            subscriptionID: data.subscriptionID,
-            tier: 'Bronze'
-          })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if(data.success) {
-            alert('Thank you for subscribing to our Bronze tier!');
-          }
-        });
+    // Check if user is authenticated
+    async function checkAuth() {
+      try {
+        const response = await fetch('/api/check-auth');
+        const data = await response.json();
+        return data.isAuthenticated;
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        return false;
       }
-    }).render('#paypal-button-container-P-12C37749GW472581DNBLUGHA');
-  </script>
+    }
 
-  <script>
-    paypal.Buttons({
-      createOrder: function(data, actions) {
-        return actions.order.create({
-          purchase_units: [{
-            amount: {
-              value: '20.00'
-            },
-            description: 'Premium Package 1'
-          }]
-        });
-      },
-      onApprove: function(data, actions) {
-        return actions.order.capture().then(function(details) {
-          // Send order details to our server
-          return fetch('/api/process-payment', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              orderID: data.orderID,
-              payerID: data.payerID,
-              paymentID: details.id,
-              itemName: 'Premium Package 1'
-            })
-          })
-          .then(response => response.json())
-          .then(data => {
-            if(data.success) {
-              alert('Thank you for your purchase!');
-            }
+    // Function to handle subscription button display
+    async function initSubscriptionButtons() {
+      const isAuthenticated = await checkAuth();
+      const buttonContainers = [
+        'paypal-button-container-P-12C37749GW472581DNBLUGHA',
+        'paypal-button-container-silver',
+        'paypal-button-container-gold'
+      ];
+
+      buttonContainers.forEach(containerId => {
+        const container = document.getElementById(containerId);
+        if (!isAuthenticated) {
+          container.innerHTML = `
+            <div class="login-required">
+              <a href="/login" class="btn btn-primary">Login Required</a>
+              <p class="mt-2">Please login to subscribe</p>
+            </div>`;
+        }
+      });
+
+      if (!isAuthenticated) return;
+
+      // Bronze Tier
+      paypal.Buttons({
+        style: {
+          shape: 'pill',
+          color: 'gold',
+          layout: 'vertical',
+          label: 'subscribe'
+        },
+        createSubscription: function(data, actions) {
+          return actions.subscription.create({
+            plan_id: 'P-12C37749GW472581DNBLUGHA'
           });
-        });
-      }
-    }).render('#paypal-button-1');
+        },
+        onApprove: async function(data, actions) {
+          try {
+            const response = await fetch('/api/process-subscription', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                subscriptionID: data.subscriptionID,
+                tier: 'Bronze'
+              })
+            });
+            const result = await response.json();
+            if (result.success) {
+              alert('Thank you for subscribing to our Bronze tier!');
+              window.location.href = '/player-dashboard';
+            } else {
+              alert('Subscription failed: ' + result.message);
+            }
+          } catch (error) {
+            console.error('Subscription processing error:', error);
+            alert('An error occurred while processing your subscription');
+          }
+        }
+      }).render('#paypal-button-container-P-12C37749GW472581DNBLUGHA');
+
+      // Silver Tier
+      paypal.Buttons({
+        style: {
+          shape: 'pill',
+          color: 'silver',
+          layout: 'vertical',
+          label: 'subscribe'
+        },
+        createSubscription: function(data, actions) {
+          return actions.subscription.create({
+            plan_id: 'SILVER_PLAN_ID'
+          });
+        },
+        onApprove: async function(data, actions) {
+          try {
+            const response = await fetch('/api/process-subscription', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                subscriptionID: data.subscriptionID,
+                tier: 'Silver'
+              })
+            });
+            const result = await response.json();
+            if (result.success) {
+              alert('Thank you for subscribing to our Silver tier!');
+              window.location.href = '/player-dashboard';
+            } else {
+              alert('Subscription failed: ' + result.message);
+            }
+          } catch (error) {
+            console.error('Subscription processing error:', error);
+            alert('An error occurred while processing your subscription');
+          }
+        }
+      }).render('#paypal-button-container-silver');
+
+      // Gold Tier
+      paypal.Buttons({
+        style: {
+          shape: 'pill',
+          color: 'gold',
+          layout: 'vertical',
+          label: 'subscribe'
+        },
+        createSubscription: function(data, actions) {
+          return actions.subscription.create({
+            plan_id: 'GOLD_PLAN_ID'
+          });
+        },
+        onApprove: async function(data, actions) {
+          try {
+            const response = await fetch('/api/process-subscription', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                subscriptionID: data.subscriptionID,
+                tier: 'Gold'
+              })
+            });
+            const result = await response.json();
+            if (result.success) {
+              alert('Thank you for subscribing to our Gold tier!');
+              window.location.href = '/player-dashboard';
+            } else {
+              alert('Subscription failed: ' + result.message);
+            }
+          } catch (error) {
+            console.error('Subscription processing error:', error);
+            alert('An error occurred while processing your subscription');
+          }
+        }
+      }).render('#paypal-button-container-gold');
+    }
+
+    // Initialize subscription buttons when page loads
+    document.addEventListener('DOMContentLoaded', initSubscriptionButtons);
   </script>
 
   <style>
+    .login-required {
+      text-align: center;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 10px;
+    }
+    .login-required .btn {
+      background: #0056b3;
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 5px;
+      display: inline-block;
+    }
+    .login-required p {
+      color: #666;
+      margin-top: 10px;
+      font-size: 0.9em;
+    }
     .subscription-plans {
       padding: 80px 0;
       background: #f8f9fa;
