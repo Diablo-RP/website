@@ -239,7 +239,7 @@ db.connect((err) => {
               tier VARCHAR(50) NOT NULL,
               status ENUM('active', 'cancelled', 'expired') DEFAULT 'active',
               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-              expires_at TIMESTAMP,
+              expires_at TIMESTAMP NULL DEFAULT NULL,
               FOREIGN KEY (user_id) REFERENCES users(id)
             )
           `;
