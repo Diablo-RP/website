@@ -577,40 +577,71 @@
     </div>
 
     <div class="container mt-5">
-      <div class="tickets-section mt-5">
-        <h2 class="section-title">Support Tickets</h2>
-        
-        <!-- New Ticket Form -->
-        <div class="ticket-form">
-          <h3 class="text-white mb-4">Create New Ticket</h3>
-          <form id="ticketForm">
-            <div class="form-group mb-3">
-              <label for="ticketSubject" class="text-white">Subject</label>
-              <input type="text" class="form-control" id="ticketSubject" required>
+      <div class="row">
+        <!-- Discord Link Section -->
+        <div class="col-12 mb-4">
+          <div class="discord-section">
+            <h3 class="text-white mb-3">
+              <i class="fab fa-discord"></i> Link Discord Account
+            </h3>
+            <div id="discordStatus">
+              <div class="not-linked" id="notLinkedMessage">
+                <p class="text-warning">Your Discord account is not linked. Link it to receive ticket updates!</p>
+                <button id="linkDiscordBtn" class="btn btn-discord">
+                  <i class="fab fa-discord"></i> Link Discord Account
+                </button>
+              </div>
+              <div class="linked" id="linkedMessage" style="display: none;">
+                <p class="text-success">
+                  <i class="fas fa-check-circle"></i> 
+                  Discord Account Linked: <span id="discordUsername"></span>
+                </p>
+                <button id="unlinkDiscordBtn" class="btn btn-danger btn-sm">
+                  <i class="fas fa-unlink"></i> Unlink Account
+                </button>
+              </div>
             </div>
-            <div class="form-group mb-3">
-              <label for="ticketCategory" class="text-white">Category</label>
-              <select class="form-control" id="ticketCategory" required>
-                <option value="">Select a category</option>
-                <option value="technical">Technical Issue</option>
-                <option value="gameplay">Gameplay Issue</option>
-                <option value="player">Player Report</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <div class="form-group mb-3">
-              <label for="ticketDescription" class="text-white">Description</label>
-              <textarea class="form-control" id="ticketDescription" rows="5" required></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">Submit Ticket</button>
-          </form>
+          </div>
         </div>
 
-        <!-- Ticket List -->
-        <div class="ticket-list mt-5">
-          <h3 class="text-white mb-4">Your Tickets</h3>
-          <div id="ticketsList">
-            <!-- Tickets will be loaded here -->
+        <!-- Tickets Section -->
+        <div class="col-12">
+          <div class="tickets-section">
+            <h2 class="section-title">Support Tickets</h2>
+            
+            <!-- New Ticket Form -->
+            <div class="ticket-form">
+              <h3 class="text-white mb-4">Create New Ticket</h3>
+              <form id="ticketForm">
+                <div class="form-group mb-3">
+                  <label for="ticketSubject" class="text-white">Subject</label>
+                  <input type="text" class="form-control" id="ticketSubject" required>
+                </div>
+                <div class="form-group mb-3">
+                  <label for="ticketCategory" class="text-white">Category</label>
+                  <select class="form-control" id="ticketCategory" required>
+                    <option value="">Select a category</option>
+                    <option value="technical">Technical Issue</option>
+                    <option value="gameplay">Gameplay Issue</option>
+                    <option value="player">Player Report</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div class="form-group mb-3">
+                  <label for="ticketDescription" class="text-white">Description</label>
+                  <textarea class="form-control" id="ticketDescription" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Ticket</button>
+              </form>
+            </div>
+
+            <!-- Ticket List -->
+            <div class="ticket-list mt-5">
+              <h3 class="text-white mb-4">Your Tickets</h3>
+              <div id="ticketsList">
+                <!-- Tickets will be loaded here -->
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -714,6 +745,171 @@
         color: #fff;
       }
     </style>
+
+    <style>
+      /* Discord Section Styles */
+      .discord-section {
+        background: rgba(0,0,0,0.7);
+        padding: 25px;
+        border-radius: 15px;
+        border: 1px solid #8b0000;
+        margin-bottom: 20px;
+      }
+
+      .btn-discord {
+        background: #7289da;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 1.1em;
+        transition: all 0.3s;
+      }
+
+      .btn-discord:hover {
+        background: #5b73c7;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      }
+
+      .btn-discord i {
+        margin-right: 8px;
+      }
+
+      #discordUsername {
+        color: #7289da;
+        font-weight: bold;
+      }
+
+      .linked p {
+        font-size: 1.1em;
+      }
+
+      #unlinkDiscordBtn {
+        margin-top: 10px;
+      }
+    </style>
+
+    <script>
+      // Discord linking functionality
+      function initializeDiscord() {
+        const discordId = sessionStorage.getItem('discordId');
+        const discordUsername = sessionStorage.getItem('discordUsername');
+        
+        if (discordId && discordUsername) {
+          document.getElementById('notLinkedMessage').style.display = 'none';
+          document.getElementById('linkedMessage').style.display = 'block';
+          document.getElementById('discordUsername').textContent = discordUsername;
+        } else {
+          document.getElementById('notLinkedMessage').style.display = 'block';
+          document.getElementById('linkedMessage').style.display = 'none';
+        }
+      }
+
+      // Handle Discord link button click
+      document.getElementById('linkDiscordBtn').addEventListener('click', function() {
+        const characterId = sessionStorage.getItem('characterId');
+        if (!characterId) return;
+
+        // Open Discord OAuth2 window
+        const width = 500;
+        const height = 750;
+        const left = (window.screen.width - width) / 2;
+        const top = (window.screen.height - height) / 2;
+        
+        const discordWindow = window.open(
+          `http://localhost:3001/api/discord/auth?characterId=${characterId}`,
+          'Link Discord Account',
+          `width=${width},height=${height},left=${left},top=${top}`
+        );
+
+        // Handle the OAuth2 callback
+        window.addEventListener('message', function(event) {
+          if (event.origin !== 'http://localhost:3001') return;
+          
+          if (event.data.type === 'DISCORD_LINKED') {
+            sessionStorage.setItem('discordId', event.data.discordId);
+            sessionStorage.setItem('discordUsername', event.data.username);
+            initializeDiscord();
+            discordWindow.close();
+          }
+        });
+      });
+
+      // Handle Discord unlink button click
+      document.getElementById('unlinkDiscordBtn').addEventListener('click', function() {
+        const characterId = sessionStorage.getItem('characterId');
+        if (!characterId) return;
+
+        if (confirm('Are you sure you want to unlink your Discord account?')) {
+          fetch('http://localhost:3001/api/discord/unlink', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ characterId })
+          })
+          .then(response => response.json())
+          .then(result => {
+            if (result.success) {
+              sessionStorage.removeItem('discordId');
+              sessionStorage.removeItem('discordUsername');
+              initializeDiscord();
+            } else {
+              throw new Error(result.error || 'Failed to unlink Discord account');
+            }
+          })
+          .catch(error => {
+            console.error('Error unlinking Discord:', error);
+            alert('Error unlinking Discord account. Please try again later.');
+          });
+        }
+      });
+
+      // Update ticket form submission to include Discord notification
+      document.getElementById('ticketForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const characterId = sessionStorage.getItem('characterId');
+        const discordId = sessionStorage.getItem('discordId');
+        if (!characterId) return;
+
+        const ticketData = {
+          characterId: characterId,
+          subject: document.getElementById('ticketSubject').value,
+          category: document.getElementById('ticketCategory').value,
+          description: document.getElementById('ticketDescription').value,
+          discordId: discordId // Include Discord ID if available
+        };
+
+        fetch('http://localhost:3001/api/tickets', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(ticketData)
+        })
+        .then(response => response.json())
+        .then(result => {
+          if (result.success) {
+            document.getElementById('ticketForm').reset();
+            loadTickets();
+            alert('Ticket submitted successfully!' + 
+                  (discordId ? ' You will receive updates on Discord.' : ''));
+          } else {
+            throw new Error(result.error || 'Failed to submit ticket');
+          }
+        })
+        .catch(error => {
+          console.error('Error submitting ticket:', error);
+          alert('Error submitting ticket. Please try again later.');
+        });
+      });
+
+      // Initialize Discord status when page loads
+      document.addEventListener('DOMContentLoaded', function() {
+        initializeDiscord();
+      });
+    </script>
 
     <script>
       // Load tickets function
