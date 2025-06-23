@@ -80,7 +80,10 @@
                 </ul>
               </li>
               <li><a href="tickets.html">Support</a></li>
-              <li><a href="signin.html" class="active">Sign In</a></li>
+              <li>
+                <a href="signin.html" id="loginLink" class="active">Sign In</a>
+                <span class="login-status logged-out" id="loginStatus"></span>
+              </li>
             </ul>
             <a class='menu-trigger'>
               <span>Menu</span>
@@ -148,6 +151,32 @@
   <script src="assets/js/counter.js"></script>
   <script src="assets/js/custom.js"></script>
   <script>
+    // Function to update login status UI
+    function updateLoginStatus() {
+      const isLoggedIn = sessionStorage.getItem('userId') !== null;
+      const loginStatus = document.getElementById('loginStatus');
+      const loginLink = document.getElementById('loginLink');
+      
+      if (isLoggedIn) {
+        loginStatus.classList.remove('logged-out');
+        loginStatus.classList.add('logged-in');
+        loginLink.textContent = 'Sign Out';
+        loginLink.href = '#';
+        loginLink.onclick = function(e) {
+          e.preventDefault();
+          sessionStorage.clear();
+          window.location.reload();
+        };
+      } else {
+        loginStatus.classList.remove('logged-in');
+        loginStatus.classList.add('logged-out');
+        loginLink.textContent = 'Sign In';
+        loginLink.href = 'signin.html';
+        loginLink.onclick = null;
+      }
+    }
+
+    // Function to update navigation
     function updateNavigation() {
       const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
       const nav = document.querySelector('.main-nav .nav');
@@ -194,28 +223,33 @@
         console.log('Response data:', data);
         
         if (response.ok) {
-          // Store user info in sessionStorage for better security
+          // Store user info in sessionStorage
           sessionStorage.setItem('userId', data.userId);
           sessionStorage.setItem('characterId', data.characterId);
           sessionStorage.setItem('isAdmin', data.isAdmin);
           
-          // Update navigation to show admin link if admin
+          // Update UI
+          updateLoginStatus();
           updateNavigation();
-
-          alert('Login successful!');
-          console.log('Redirecting to dashboard...');
-          window.location.replace('player-dashboard.html');
+          
+          // Redirect back to previous page or home
+          const redirectTo = sessionStorage.getItem('loginRedirect') || 'index.html';
+          sessionStorage.removeItem('loginRedirect');
+          window.location.href = redirectTo;
         } else {
-          alert(data.error || 'Invalid character ID or password');
+          alert(data.error || 'Login failed');
         }
       } catch (error) {
-        console.error('Error:', error);
-        alert('Error during login');
+        console.error('Login error:', error);
+        alert('An error occurred during login');
       }
     }
 
-    // Update navigation on page load
-    document.addEventListener('DOMContentLoaded', updateNavigation);
+    // Update navigation and login status on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      updateLoginStatus();
+      updateNavigation();
+    });
   </script>
 </body>
 </html>
