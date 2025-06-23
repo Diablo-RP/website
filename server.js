@@ -50,15 +50,30 @@ const sessionConfig = {
 
 app.use(session(sessionConfig));
 
-// Initialize Discord bot
-const discord = new Client({ 
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages
-  ] 
-});
+// Initialize Discord bot if token is provided
+let discord = null;
+if (process.env.DISCORD_BOT_TOKEN) {
+  try {
+    discord = new Client({ 
+      intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages
+      ] 
+    });
 
-discord.login(DISCORD_BOT_TOKEN);
+    discord.login(process.env.DISCORD_BOT_TOKEN)
+      .then(() => {
+        console.log('Discord bot connected successfully');
+      })
+      .catch(error => {
+        console.warn('Failed to initialize Discord bot:', error.message);
+        discord = null;
+      });
+  } catch (error) {
+    console.warn('Failed to initialize Discord bot:', error.message);
+    discord = null;
+  }
+}
 
 // Login endpoint
 app.post('/api/login', async (req, res) => {
@@ -836,11 +851,15 @@ const DISCORD_COLORS = {
 };
 
 // Discord notification images
-const TICKET_IMAGES = {
-  player: `${WEBSITE_URL}/assets/images/player-report.png`,
-  technical: `${WEBSITE_URL}/assets/images/technical-issue.png`,
-  gameplay: `${WEBSITE_URL}/assets/images/gameplay-issue.png`,
-  default: `${WEBSITE_URL}/assets/images/logo.png`
+const DISCORD_IMAGES = {
+  new: `${process.env.WEBSITE_URL}/assets/images/ticket-banner.png`,
+  open: `${process.env.WEBSITE_URL}/assets/images/ticket-banner.png`,
+  closed: `${process.env.WEBSITE_URL}/assets/images/ticket-banner.png`,
+  response: `${process.env.WEBSITE_URL}/assets/images/ticket-banner.png`,
+  player: `${process.env.WEBSITE_URL}/assets/images/player-report.png`,
+  technical: `${process.env.WEBSITE_URL}/assets/images/technical-issue.png`,
+  gameplay: `${process.env.WEBSITE_URL}/assets/images/gameplay-issue.png`,
+  other: `${process.env.WEBSITE_URL}/assets/images/ticket-banner.png`
 };
 
 // Function to create a styled field
@@ -859,24 +878,27 @@ function createDivider() {
 
 // Function to send Discord notification
 async function sendDiscordNotification(type, data) {
-  if (!DISCORD_WEBHOOK_URL) return;
+  if (!discord) {
+    console.log('Discord notification skipped - bot not initialized');
+    return;
+  }
 
   try {
     let embed = {
       color: DISCORD_COLORS[type],
       timestamp: new Date().toISOString(),
-      url: `${WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id}`,
+      url: `${process.env.WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id}`,
       thumbnail: {
-        url: TICKET_IMAGES[data.ticket.category?.toLowerCase()] || TICKET_IMAGES.default
+        url: DISCORD_IMAGES[data.ticket.category?.toLowerCase()] || DISCORD_IMAGES.other
       },
       author: {
         name: 'Diablo County RP Support',
-        icon_url: `${WEBSITE_URL}/assets/images/logo.png`,
-        url: WEBSITE_URL
+        icon_url: `${process.env.WEBSITE_URL}/assets/images/logo.png`,
+        url: process.env.WEBSITE_URL
       },
       footer: {
         text: `Ticket #${data.ticket.id} • Diablo County RP`,
-        icon_url: `${WEBSITE_URL}/assets/images/logo.png`
+        icon_url: `${process.env.WEBSITE_URL}/assets/images/logo.png`
       }
     };
 
@@ -888,9 +910,9 @@ async function sendDiscordNotification(type, data) {
         embed = {
           ...embed,
           title: '🎫 New Support Ticket',
-          description: `A new support ticket has been created and requires attention.\n\n**Quick Actions**\n• [View Ticket](${WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id})\n• [View All Tickets](${WEBSITE_URL}/admin-tickets.html)`,
+          description: `A new support ticket has been created and requires attention.\n\n**Quick Actions**\n• [View Ticket](${process.env.WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id})\n• [View All Tickets](${process.env.WEBSITE_URL}/admin-tickets.html)`,
           image: {
-            url: `${WEBSITE_URL}/assets/images/ticket-banner.png`
+            url: `${process.env.WEBSITE_URL}/assets/images/ticket-banner.png`
           },
           fields: [
             createField('Subject', `\`${data.ticket.subject}\``),
@@ -913,7 +935,7 @@ async function sendDiscordNotification(type, data) {
         embed = {
           ...embed,
           title: `${getStatusEmoji(data.newStatus)} Status Update`,
-          description: `The status of ticket [#${data.ticket.id}](${WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id}) has been updated.`,
+          description: `The status of ticket [#${data.ticket.id}](${process.env.WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id}) has been updated.`,
           fields: [
             createField('Ticket', `\`${data.ticket.subject}\``),
             createDivider(),
@@ -931,7 +953,7 @@ async function sendDiscordNotification(type, data) {
         embed = {
           ...embed,
           title: '💬 Admin Response',
-          description: `An admin has responded to ticket [#${data.ticket.id}](${WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id}).`,
+          description: `An admin has responded to ticket [#${data.ticket.id}](${process.env.WEBSITE_URL}/admin-tickets.html?id=${data.ticket.id}).`,
           fields: [
             createField('Ticket', `\`${data.ticket.subject}\``),
             createDivider(),
@@ -949,16 +971,16 @@ async function sendDiscordNotification(type, data) {
         break;
     }
 
-    await fetch(DISCORD_WEBHOOK_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        content,
-        embeds: [embed]
-      })
-    });
+    // Add thumbnail if available
+    const thumbnailUrl = DISCORD_IMAGES[type] || 
+                        DISCORD_IMAGES[data.ticket.category?.toLowerCase()] || 
+                        DISCORD_IMAGES.other;
+    if (thumbnailUrl) {
+      embed.thumbnail = { url: thumbnailUrl };
+    }
+
+    // Send the notification
+    await discord.channels.cache.get(DISCORD_WEBHOOK_CHANNEL_ID).send({ content, embeds: [embed] });
   } catch (error) {
     console.error('Error sending Discord notification:', error);
   }
