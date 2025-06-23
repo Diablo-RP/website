@@ -14,7 +14,12 @@ const PAYPAL_API = 'https://api-m.paypal.com';
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.')); // Serve static files
+app.use(express.static(__dirname)); // Serve static files from current directory
+
+// Add this to handle HTML file requests
+app.get('*.html', (req, res) => {
+  res.sendFile(__dirname + req.path);
+});
 
 // Email configuration
 const transporter = nodemailer.createTransport({
