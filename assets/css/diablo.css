@@ -345,21 +345,20 @@ input, textarea, select {
 
 /* Login status indicator */
 .login-status {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
   display: inline-block;
-  margin-left: 10px;
-  vertical-align: middle;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-left: 5px;
   transition: background-color 0.3s ease;
 }
 
 .login-status.logged-in {
   background-color: #2ecc71;
-  box-shadow: 0 0 8px #2ecc71;
+  box-shadow: 0 0 5px #2ecc71;
 }
 
 .login-status.logged-out {
   background-color: #e74c3c;
-  box-shadow: 0 0 8px #e74c3c;
+  box-shadow: 0 0 5px #e74c3c;
 }

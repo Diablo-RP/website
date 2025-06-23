@@ -38,6 +38,24 @@
         font-size: 2em;
       }
     </style>
+    <style>
+      .login-status {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-left: 5px;
+        transition: background-color 0.3s ease;
+      }
+      .login-status.logged-in {
+        background-color: #2ecc71;
+        box-shadow: 0 0 5px #2ecc71;
+      }
+      .login-status.logged-out {
+        background-color: #e74c3c;
+        box-shadow: 0 0 5px #e74c3c;
+      }
+    </style>
 <!--
 
 TemplateMo 589 lugx gaming
@@ -86,8 +104,11 @@ https://templatemo.com/tm-589-lugx-gaming
                   <li><a href="newStarterGuide.html">Starter Guides</a></li>
                 </ul>
               </li>
+              <li>
+                <a href="signin.html" id="loginLink">Sign In</a>
+                <span class="login-status logged-out" id="loginStatus"></span>
+              </li>
               <li><a href="tickets.html">Support</a></li>
-              <li><a href="signin.html">Sign In</a></li>
             </ul>
             <a class='menu-trigger'>
               <span>Menu</span>
@@ -386,6 +407,35 @@ https://templatemo.com/tm-589-lugx-gaming
     document.addEventListener('DOMContentLoaded', function() {
       initializeNavigation();
     });
+  </script>
+  <script>
+    // Function to update login status UI
+    function updateLoginStatus() {
+      const isLoggedIn = sessionStorage.getItem('userId') !== null;
+      const loginStatus = document.getElementById('loginStatus');
+      const loginLink = document.getElementById('loginLink');
+      
+      if (isLoggedIn) {
+        loginStatus.classList.remove('logged-out');
+        loginStatus.classList.add('logged-in');
+        loginLink.textContent = 'Sign Out';
+        loginLink.href = '#';
+        loginLink.onclick = function(e) {
+          e.preventDefault();
+          sessionStorage.clear();
+          window.location.reload();
+        };
+      } else {
+        loginStatus.classList.remove('logged-in');
+        loginStatus.classList.add('logged-out');
+        loginLink.textContent = 'Sign In';
+        loginLink.href = 'signin.html';
+        loginLink.onclick = null;
+      }
+    }
+
+    // Update login status when page loads
+    document.addEventListener('DOMContentLoaded', updateLoginStatus);
   </script>
   </body>
 </html>
