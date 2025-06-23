@@ -569,6 +569,265 @@
       }
     </style>
 
+    <div class="container mt-5">
+      <h2 class="text-center mb-4">Player Dashboard</h2>
+      <div id="characters-container">
+        <!-- Characters will be dynamically added here -->
+      </div>
+    </div>
+
+    <div class="container mt-5">
+      <div class="tickets-section mt-5">
+        <h2 class="section-title">Support Tickets</h2>
+        
+        <!-- New Ticket Form -->
+        <div class="ticket-form">
+          <h3 class="text-white mb-4">Create New Ticket</h3>
+          <form id="ticketForm">
+            <div class="form-group mb-3">
+              <label for="ticketSubject" class="text-white">Subject</label>
+              <input type="text" class="form-control" id="ticketSubject" required>
+            </div>
+            <div class="form-group mb-3">
+              <label for="ticketCategory" class="text-white">Category</label>
+              <select class="form-control" id="ticketCategory" required>
+                <option value="">Select a category</option>
+                <option value="technical">Technical Issue</option>
+                <option value="gameplay">Gameplay Issue</option>
+                <option value="player">Player Report</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group mb-3">
+              <label for="ticketDescription" class="text-white">Description</label>
+              <textarea class="form-control" id="ticketDescription" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Ticket</button>
+          </form>
+        </div>
+
+        <!-- Ticket List -->
+        <div class="ticket-list mt-5">
+          <h3 class="text-white mb-4">Your Tickets</h3>
+          <div id="ticketsList">
+            <!-- Tickets will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      .tickets-section {
+        background: rgba(0,0,0,0.7);
+        padding: 30px;
+        border-radius: 15px;
+      }
+      
+      .section-title {
+        font-family: 'Stint Ultra Condensed', cursive;
+        color: #8b0000;
+        font-size: 2.5em;
+        text-transform: uppercase;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        margin-bottom: 30px;
+        letter-spacing: 2px;
+        border-bottom: 2px solid #8b0000;
+        padding-bottom: 15px;
+      }
+
+      .ticket-form {
+        background: rgba(139,0,0,0.1);
+        border: 1px solid #8b0000;
+        padding: 25px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+      }
+
+      .ticket-form label {
+        color: #ffd700;
+        font-size: 1.2em;
+        margin-bottom: 5px;
+      }
+
+      .ticket-form .form-control {
+        background: rgba(0,0,0,0.7);
+        border: 1px solid #8b0000;
+        color: #fff;
+      }
+
+      .ticket-form .form-control:focus {
+        background: rgba(0,0,0,0.8);
+        border-color: #ffd700;
+        box-shadow: 0 0 5px rgba(255,215,0,0.3);
+      }
+
+      .ticket-form .btn-primary {
+        background: #8b0000;
+        border: none;
+        padding: 10px 25px;
+        font-size: 1.2em;
+        transition: all 0.3s;
+      }
+
+      .ticket-form .btn-primary:hover {
+        background: #6e0909;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      }
+
+      .ticket-list {
+        background: rgba(139,0,0,0.1);
+        border: 1px solid #8b0000;
+        padding: 25px;
+        border-radius: 10px;
+      }
+
+      .ticket-item {
+        background: rgba(0,0,0,0.7);
+        border: 1px solid #8b0000;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        color: #fff;
+      }
+
+      .ticket-item:last-child {
+        margin-bottom: 0;
+      }
+
+      .ticket-status {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 15px;
+        font-size: 0.9em;
+        margin-left: 10px;
+      }
+
+      .status-open {
+        background: #28a745;
+        color: #fff;
+      }
+
+      .status-closed {
+        background: #dc3545;
+        color: #fff;
+      }
+    </style>
+
+    <script>
+      // Load tickets function
+      function loadTickets() {
+        const characterId = sessionStorage.getItem('characterId');
+        if (!characterId) return;
+
+        fetch(`http://localhost:3001/api/tickets/${characterId}`)
+          .then(response => response.json())
+          .then(tickets => {
+            const ticketsList = document.getElementById('ticketsList');
+            if (tickets.length === 0) {
+              ticketsList.innerHTML = '<p class="text-white">No tickets found.</p>';
+              return;
+            }
+
+            ticketsList.innerHTML = tickets.map(ticket => `
+              <div class="ticket-item">
+                <h4>${ticket.subject}</h4>
+                <p>${ticket.description}</p>
+                <div>
+                  <span class="text-muted">Category: ${ticket.category}</span>
+                  <span class="ticket-status ${ticket.status === 'open' ? 'status-open' : 'status-closed'}">
+                    ${ticket.status.toUpperCase()}
+                  </span>
+                  ${ticket.status === 'open' ? 
+                    `<button class="btn btn-danger btn-sm float-end close-ticket" data-ticket-id="${ticket.id}">
+                      Close Ticket
+                    </button>` : ''
+                  }
+                </div>
+              </div>
+            `).join('');
+          })
+          .catch(error => {
+            console.error('Error loading tickets:', error);
+            document.getElementById('ticketsList').innerHTML = 
+              '<p class="text-danger">Error loading tickets. Please try again later.</p>';
+          });
+      }
+
+      // Handle ticket form submission
+      document.getElementById('ticketForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const characterId = sessionStorage.getItem('characterId');
+        if (!characterId) return;
+
+        const ticketData = {
+          characterId: characterId,
+          subject: document.getElementById('ticketSubject').value,
+          category: document.getElementById('ticketCategory').value,
+          description: document.getElementById('ticketDescription').value
+        };
+
+        fetch('http://localhost:3001/api/tickets', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(ticketData)
+        })
+        .then(response => response.json())
+        .then(result => {
+          if (result.success) {
+            document.getElementById('ticketForm').reset();
+            loadTickets(); // Reload tickets list
+            alert('Ticket submitted successfully!');
+          } else {
+            throw new Error(result.error || 'Failed to submit ticket');
+          }
+        })
+        .catch(error => {
+          console.error('Error submitting ticket:', error);
+          alert('Error submitting ticket. Please try again later.');
+        });
+      });
+
+      // Handle ticket closure
+      document.addEventListener('click', function(event) {
+        if (!event.target.matches('.close-ticket')) return;
+        
+        const ticketId = event.target.dataset.ticketId;
+        const characterId = sessionStorage.getItem('characterId');
+        if (!ticketId || !characterId) return;
+
+        if (confirm('Are you sure you want to close this ticket?')) {
+          fetch(`http://localhost:3001/api/tickets/${ticketId}/close`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ characterId })
+          })
+          .then(response => response.json())
+          .then(result => {
+            if (result.success) {
+              loadTickets(); // Reload tickets list
+            } else {
+              throw new Error(result.error || 'Failed to close ticket');
+            }
+          })
+          .catch(error => {
+            console.error('Error closing ticket:', error);
+            alert('Error closing ticket. Please try again later.');
+          });
+        }
+      });
+
+      // Load tickets when page loads
+      document.addEventListener('DOMContentLoaded', function() {
+        loadTickets();
+      });
+    </script>
+
     <footer>
       <div class="container">
         <div class="col-lg-12">
