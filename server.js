@@ -5,6 +5,8 @@ const cors = require('cors');
 const nodemailer = require('nodemailer');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 require('dotenv').config();
+const session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session);
 
 // PayPal configuration
 const PAYPAL_CLIENT_ID = 'AZLUOzUrxbmSfcgkUnygNj1R2VLv7h09GlS-GW-0aESQNcxald90D58h4j25bUP_NLDUkCVGJ_cLuoV1';
@@ -21,6 +23,68 @@ app.get('*.html', (req, res) => {
   res.sendFile(__dirname + req.path);
 });
 
+// Session configuration
+const sessionConfig = {
+  name: 'session',
+  secret: 'secret',
+  store: new MySQLStore({
+    host: 'localhost',
+    port: 3306,
+    user: 'root',
+    password: '',
+    database: 'rsg_dev'
+  }),
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+  }
+};
+
+app.use(session(sessionConfig));
+
+// Login endpoint
+app.post('/api/login', async (req, res) => {
+  try {
+    const { characterId, password } = req.body;
+    
+    // Query the database for the user
+    const [users] = await db.promise().query(
+      'SELECT * FROM users WHERE character_id = ?',
+      [characterId]
+    );
+
+    if (users.length === 0) {
+      return res.status(401).json({ error: 'Invalid character ID or password' });
+    }
+
+    const user = users[0];
+    const validPassword = await bcrypt.compare(password, user.password);
+
+    if (!validPassword) {
+      return res.status(401).json({ error: 'Invalid character ID or password' });
+    }
+
+    // Store user info in session
+    req.session.user = {
+      id: user.id,
+      characterId: user.character_id,
+      isAdmin: user.is_admin === 1
+    };
+
+    // Send back user info (excluding sensitive data)
+    res.json({
+      userId: user.id,
+      characterId: user.character_id,
+      isAdmin: user.is_admin === 1,
+      message: 'Login successful'
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Email configuration
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -34,40 +98,38 @@ const transporter = nodemailer.createTransport({
 
 // Authentication middleware
 const authenticateUser = async (req, res, next) => {
-  const characterId = req.headers['character-id'];
-  if (!characterId) {
-    return res.status(401).json({ error: 'No character ID provided' });
+  if (!req.session || !req.session.user) {
+    return res.status(401).json({ error: 'You must be logged in to access this endpoint' });
   }
 
   try {
     const [users] = await db.promise().query(
-      'SELECT * FROM users WHERE character_id = ?',
-      [characterId]
+      'SELECT * FROM users WHERE id = ?',
+      [req.session.user.id]
     );
 
     if (users.length === 0) {
-      return res.status(401).json({ error: 'Invalid character ID' });
+      return res.status(401).json({ error: 'Invalid user session' });
     }
 
     req.user = users[0];
     next();
   } catch (error) {
     console.error('Authentication error:', error);
-    res.status(500).json({ error: 'Error during authentication' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 // Admin authentication middleware
 const authenticateAdmin = async (req, res, next) => {
-  const characterId = req.headers['character-id'];
-  if (!characterId) {
-    return res.status(401).json({ error: 'No character ID provided' });
+  if (!req.session || !req.session.user) {
+    return res.status(401).json({ error: 'You must be logged in to access this endpoint' });
   }
 
   try {
     const [users] = await db.promise().query(
-      'SELECT * FROM users WHERE character_id = ? AND is_admin = true',
-      [characterId]
+      'SELECT * FROM users WHERE id = ? AND is_admin = true',
+      [req.session.user.id]
     );
 
     if (users.length === 0) {
@@ -78,7 +140,7 @@ const authenticateAdmin = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Admin authentication error:', error);
-    res.status(500).json({ error: 'Error during authentication' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -510,52 +572,11 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Login endpoint
-app.post('/api/login', async (req, res) => {
-  const { characterId, password } = req.body;
-  
-  if (!characterId || !password) {
-    return res.status(400).json({ error: 'Please provide both character ID and password' });
-  }
-  
-  try {
-    // Find user by character ID
-    const [users] = await db.promise().query(
-      'SELECT * FROM users WHERE character_id = ?',
-      [characterId]
-    );
-    
-    if (users.length === 0) {
-      return res.status(401).json({ error: 'Invalid character ID or password' });
-    }
-    
-    const user = users[0];
-    
-    // Verify password
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) {
-      return res.status(401).json({ error: 'Invalid character ID or password' });
-    }
-    
-    // Return user info
-    res.json({ 
-      message: 'Login successful',
-      userId: user.id,
-      characterId: user.character_id,
-      email: user.email,
-      isAdmin: user.is_admin
-    });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: 'Error during login' });
-  }
-});
-
 // Player info endpoint
 app.get('/api/player-info', authenticateUser, async (req, res) => {
   try {
     console.log('Player info request received');
-    const characterId = req.headers['character-id'];
+    const characterId = req.session.user.characterId;
     console.log('Character ID:', characterId);
 
     // Try different formats of the character ID
@@ -643,7 +664,7 @@ app.post('/api/tickets', authenticateUser, async (req, res) => {
     // Insert the ticket
     const [result] = await db.promise().query(
       'INSERT INTO tickets (user_id, subject, category, description) VALUES (?, ?, ?, ?)',
-      [req.user.id, subject, category, description]
+      [req.session.user.id, subject, category, description]
     );
 
     // Get the created ticket
@@ -656,7 +677,7 @@ app.post('/api/tickets', authenticateUser, async (req, res) => {
       // Send Discord notification
       await sendDiscordNotification('new', {
         ticket: tickets[0],
-        user: req.user
+        user: req.session.user
       });
     }
 
@@ -677,7 +698,7 @@ app.get('/api/tickets', authenticateUser, async (req, res) => {
        FROM tickets 
        WHERE user_id = ? 
        ORDER BY created_at DESC`,
-      [req.user.id]
+      [req.session.user.id]
     );
 
     res.json({ tickets });
@@ -699,7 +720,7 @@ app.patch('/api/tickets/:id', authenticateUser, async (req, res) => {
     // Update the ticket
     await db.promise().query(
       'UPDATE tickets SET status = ? WHERE id = ? AND user_id = ?',
-      [status, id, req.user.id]
+      [status, id, req.session.user.id]
     );
 
     // Get updated ticket
@@ -713,7 +734,7 @@ app.patch('/api/tickets/:id', authenticateUser, async (req, res) => {
       await sendDiscordNotification('status', {
         ticket: tickets[0],
         newStatus: status,
-        user: req.user
+        user: req.session.user
       });
     }
 
@@ -792,7 +813,7 @@ app.post('/api/admin/tickets/:id/respond', authenticateAdmin, async (req, res) =
       // Add the response
       await connection.query(
         'INSERT INTO ticket_responses (ticket_id, admin_id, content) VALUES (?, ?, ?)',
-        [id, req.user.id, response]
+        [id, req.session.user.id, response]
       );
 
       // Update ticket status if provided
@@ -815,7 +836,7 @@ app.post('/api/admin/tickets/:id/respond', authenticateAdmin, async (req, res) =
           ticket: tickets[0],
           response,
           newStatus: status,
-          user: req.user
+          user: req.session.user
         });
 
         // Send email if requested
