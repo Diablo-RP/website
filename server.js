@@ -57,18 +57,32 @@ if (process.env.DISCORD_BOT_TOKEN) {
     discord = new Client({ 
       intents: [
         GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.DirectMessages
       ] 
     });
 
     discord.login(process.env.DISCORD_BOT_TOKEN)
       .then(() => {
         console.log('Discord bot connected successfully');
+        // Set bot status
+        discord.user.setPresence({
+          activities: [{ name: 'Support Tickets', type: 'WATCHING' }],
+          status: 'online'
+        });
       })
       .catch(error => {
         console.warn('Failed to initialize Discord bot:', error.message);
         discord = null;
       });
+
+    // Add ready event handler
+    discord.on('ready', () => {
+      console.log(`Logged in as ${discord.user.tag}!`);
+    });
+
   } catch (error) {
     console.warn('Failed to initialize Discord bot:', error.message);
     discord = null;
