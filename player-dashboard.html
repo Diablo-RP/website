@@ -896,43 +896,54 @@
     </script>
 
     <script>
+      // API base URL
+      const API_BASE_URL = window.location.hostname === 'localhost' 
+        ? 'http://localhost:3001' 
+        : 'https://diablo-rp.com';
+
       // Load tickets function
       function loadTickets() {
         const characterId = sessionStorage.getItem('characterId');
         if (!characterId) return;
 
-        fetch(`http://localhost:3001/api/tickets/${characterId}`)
-          .then(response => response.json())
-          .then(tickets => {
-            const ticketsList = document.getElementById('ticketsList');
-            if (tickets.length === 0) {
-              ticketsList.innerHTML = '<p class="text-white">No tickets found.</p>';
-              return;
-            }
+        fetch(`${API_BASE_URL}/api/tickets`, {
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'character-id': characterId
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          const ticketsList = document.getElementById('ticketsList');
+          if (data.length === 0) {
+            ticketsList.innerHTML = '<p class="text-white">No tickets found.</p>';
+            return;
+          }
 
-            ticketsList.innerHTML = tickets.map(ticket => `
-              <div class="ticket-item">
-                <h4>${ticket.subject}</h4>
-                <p>${ticket.description}</p>
-                <div>
-                  <span class="text-muted">Category: ${ticket.category}</span>
-                  <span class="ticket-status ${ticket.status === 'open' ? 'status-open' : 'status-closed'}">
-                    ${ticket.status.toUpperCase()}
-                  </span>
-                  ${ticket.status === 'open' ? 
-                    `<button class="btn btn-danger btn-sm float-end close-ticket" data-ticket-id="${ticket.id}">
-                      Close Ticket
-                    </button>` : ''
-                  }
-                </div>
+          ticketsList.innerHTML = data.map(ticket => `
+            <div class="ticket-item">
+              <h4>${ticket.subject}</h4>
+              <p>${ticket.description}</p>
+              <div>
+                <span class="text-muted">Category: ${ticket.category}</span>
+                <span class="ticket-status ${ticket.status === 'open' ? 'status-open' : 'status-closed'}">
+                  ${ticket.status.toUpperCase()}
+                </span>
+                ${ticket.status === 'open' ? 
+                  `<button class="btn btn-danger btn-sm float-end close-ticket" data-ticket-id="${ticket.id}">
+                    Close Ticket
+                  </button>` : ''
+                }
               </div>
-            `).join('');
-          })
-          .catch(error => {
-            console.error('Error loading tickets:', error);
-            document.getElementById('ticketsList').innerHTML = 
-              '<p class="text-danger">Error loading tickets. Please try again later.</p>';
-          });
+            </div>
+          `).join('');
+        })
+        .catch(error => {
+          console.error('Error loading tickets:', error);
+          document.getElementById('ticketsList').innerHTML = 
+            '<p class="text-danger">Error loading tickets. Please try again later.</p>';
+        });
       }
 
       // Handle ticket form submission
@@ -948,7 +959,7 @@
           description: document.getElementById('ticketDescription').value
         };
 
-        fetch('http://localhost:3001/api/tickets', {
+        fetch(`${API_BASE_URL}/api/tickets`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -984,7 +995,7 @@
         if (!ticketId || !characterId) return;
 
         if (confirm('Are you sure you want to close this ticket?')) {
-          fetch(`http://localhost:3001/api/tickets/${ticketId}/close`, {
+          fetch(`${API_BASE_URL}/api/tickets/${ticketId}/close`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json'

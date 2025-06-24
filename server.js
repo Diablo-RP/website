@@ -26,7 +26,12 @@ const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const DISCORD_REDIRECT_URI = `${process.env.WEBSITE_URL}/api/discord/callback`;
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:3001', 'https://diablo-rp.com'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'character-id']
+}));
 app.use(express.json());
 app.use(express.static(__dirname)); // Serve static files from current directory
 
@@ -51,7 +56,8 @@ const sessionConfig = {
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24 // 24 hours
+    maxAge: 1000 * 60 * 60 * 24, // 24 hours
+    sameSite: 'none'  // Add this for cross-site requests
   }
 };
 
