@@ -662,6 +662,7 @@
         font-weight: bold;
         text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         margin-bottom: 30px;
+        text-align: center;
         letter-spacing: 2px;
         border-bottom: 2px solid #8b0000;
         padding-bottom: 15px;
@@ -945,9 +946,9 @@
         fetch('http://localhost:3001/api/tickets', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'credentials': 'include'
+            'Content-Type': 'application/json'
           },
+          credentials: 'include',
           body: JSON.stringify(ticketData)
         })
         .then(response => {
