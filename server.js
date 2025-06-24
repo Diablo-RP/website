@@ -59,26 +59,22 @@ app.use(session(sessionConfig));
 
 // Initialize Discord bot if token is provided
 let discord = null;
+/* Temporarily disabled Discord bot
 if (process.env.DISCORD_BOT_TOKEN) {
   try {
     discord = new Client({ 
       intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.DirectMessages,
-        GatewayIntentBits.GuildMessageReactions,
-        GatewayIntentBits.DirectMessageReactions,
-        GatewayIntentBits.GuildPresences
+        GatewayIntentBits.Guilds,               // For server info
+        GatewayIntentBits.GuildMessages,        // For receiving messages
+        GatewayIntentBits.DirectMessages,       // For DMs
+        GatewayIntentBits.MessageContent,       // For reading message content
+        GatewayIntentBits.GuildMembers,         // For member info
+        GatewayIntentBits.GuildPresences        // For member status
       ],
       partials: [
-        Partials.Channel,
-        Partials.Message,
-        Partials.User,
-        Partials.GuildMember,
-        Partials.Reaction,
-        Partials.ThreadMember
+        Partials.Channel,    // Required for DM
+        Partials.Message,    // For message content
+        Partials.User        // For user data
       ]
     });
 
@@ -116,6 +112,7 @@ if (process.env.DISCORD_BOT_TOKEN) {
     discord = null;
   }
 }
+*/
 
 // Login endpoint
 app.post('/api/login', async (req, res) => {

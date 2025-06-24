@@ -417,134 +417,139 @@
         updateNavigation();
 
         // Fetch player info
-        $.ajax({
-          url: 'http://localhost:3001/api/player-info',
+        fetch('http://localhost:3001/api/player-info', {
           method: 'GET',
           headers: {
+            'Content-Type': 'application/json',
             'character-id': characterId
           },
-          success: function(character) {
-            console.log('Received character:', character);
-            const container = $('#characters-container');
-            container.empty();
-
-            const characterDiv = $('<div>').addClass('character-card mb-4');
-            
-            // Character name section
-            const fullName = character.firstName + (character.lastName ? ` ${character.lastName}` : '');
-            characterDiv.append(`
-              <div class="player-header">
-                <h2 class="player-name">${fullName || 'Unknown'}</h2>
-                <div class="citizen-id">Citizen ID: ${character.citizenId || 'Unknown'}</div>
-              </div>
-            `);
-
-            // Money grid
-            const moneyGrid = $('<div>').addClass('money-grid');
-            const moneyBoxes = [
-              { label: 'Cash', value: character.cash },
-              { label: 'Valentine Bank', value: character.valBank },
-              { label: 'Armadillo Bank', value: character.armBank },
-              { label: 'Rhodes Bank', value: character.rhoBank },
-              { label: 'Blackwater Bank', value: character.blkBank },
-              { label: 'Blood Money', value: character.bloodMoney }
-            ];
-
-            // Calculate total money
-            const totalMoney = moneyBoxes.reduce((sum, box) => sum + (parseFloat(box.value) || 0), 0);
-
-            moneyBoxes.forEach(box => {
-              if (typeof box.value !== 'undefined') {
-                const value = parseFloat(box.value);
-                const moneyBox = $(`
-                  <div class="money-box">
-                    <div class="money-label">${box.label}</div>
-                    <div class="money-value ${value >= 0 ? 'positive' : 'negative'}">
-                      $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </div>
-                  </div>
-                `);
-                moneyGrid.append(moneyBox);
-              }
-            });
-
-            // Add total money box
-            moneyGrid.append(`
-              <div class="money-total">
-                <div class="money-label">Total Net Worth</div>
-                <div class="money-value ${totalMoney >= 0 ? 'positive' : 'negative'}">
-                  $${totalMoney.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </div>
-              </div>
-            `);
-
-            // Add admin section if user is admin
-            if (sessionStorage.getItem('isAdmin') === 'true') {
-              moneyGrid.append(`
-                <div class="admin-section">
-                  <div class="section-header">Administration Panel</div>
-                  <div class="ticket-stats">
-                    <div class="stat-box">
-                      <div class="stat-label">Open Tickets</div>
-                      <div class="stat-value">0</div>
-                    </div>
-                    <div class="stat-box">
-                      <div class="stat-label">Pending Review</div>
-                      <div class="stat-value">0</div>
-                    </div>
-                    <div class="stat-box">
-                      <div class="stat-label">Resolved Today</div>
-                      <div class="stat-value">0</div>
-                    </div>
-                  </div>
-                  <div class="admin-actions">
-                    <a href="admin-tickets.html" class="admin-button">
-                      <i class="fa fa-ticket"></i> Manage Tickets
-                    </a>
-                    <a href="#" class="admin-button">
-                      <i class="fa fa-chart-bar"></i> View Reports
-                    </a>
-                  </div>
-                </div>
-              `);
-            }
-
-            characterDiv.append(moneyGrid);
-            container.append(characterDiv);
-
-            // Add VIP coins display if they exist
-            if (character.vipCoins) {
-              $('body').append(`
-                <div class="vip-coins">
-                  <i class="fa fa-crown coin-icon"></i>
-                  <span class="coin-value">${character.vipCoins.toLocaleString()} VIP Coins</span>
-                </div>
-              `);
-            }
-
-            // Add Diablo coins display
-            if (character.diabloCoins !== undefined) {
-              $('body').append(`
-                <div class="diablo-coins">
-                  <i class="fa fa-fire coin-icon"></i>
-                  <span class="coin-value">${character.diabloCoins.toLocaleString()} Diablo Coins</span>
-                </div>
-              `);
-            }
-          },
-          error: function(jqXHR, textStatus, errorThrown) {
-            console.error('Error fetching player info:', textStatus, errorThrown);
-            $('#characters-container').html(`
-              <div class="alert alert-danger">
-                <h4>Error Loading Character</h4>
-                <p>Unable to load character information. Please try signing in again.</p>
-                <button class="btn btn-primary mt-3" onclick="window.location.href='signin.html'">
-                  Return to Sign In
-                </button>
-              </div>
-            `);
+          credentials: 'include'
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to fetch player info');
           }
+          return response.json();
+        })
+        .then(character => {
+          console.log('Received character:', character);
+          const container = document.getElementById('characters-container');
+          container.innerHTML = '';
+
+          const characterDiv = document.createElement('div');
+          characterDiv.className = 'character-card mb-4';
+          
+          // Character name section
+          const fullName = character.firstName + (character.lastName ? ` ${character.lastName}` : '');
+          characterDiv.innerHTML = `
+            <div class="player-header">
+              <h2 class="player-name">${fullName || 'Unknown'}</h2>
+              <div class="citizen-id">Citizen ID: ${character.citizenId || 'Unknown'}</div>
+            </div>
+          `;
+
+          container.appendChild(characterDiv);
+
+          // Money grid
+          const moneyGrid = document.createElement('div');
+          moneyGrid.className = 'money-grid';
+          const moneyBoxes = [
+            { label: 'Cash', value: character.cash },
+            { label: 'Valentine Bank', value: character.valBank },
+            { label: 'Armadillo Bank', value: character.armBank },
+            { label: 'Rhodes Bank', value: character.rhoBank },
+            { label: 'Blackwater Bank', value: character.blkBank },
+            { label: 'Blood Money', value: character.bloodMoney }
+          ];
+
+          // Calculate total money
+          const totalMoney = moneyBoxes.reduce((sum, box) => sum + (parseFloat(box.value) || 0), 0);
+
+          moneyBoxes.forEach(box => {
+            if (typeof box.value !== 'undefined') {
+              const value = parseFloat(box.value);
+              const moneyBox = document.createElement('div');
+              moneyBox.className = 'money-box';
+              moneyBox.innerHTML = `
+                <div class="money-label">${box.label}</div>
+                <div class="money-value ${value >= 0 ? 'positive' : 'negative'}">
+                  $${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+              `;
+              moneyGrid.appendChild(moneyBox);
+            }
+          });
+
+          // Add total money box
+          moneyGrid.innerHTML += `
+            <div class="money-total">
+              <div class="money-label">Total Net Worth</div>
+              <div class="money-value ${totalMoney >= 0 ? 'positive' : 'negative'}">
+                $${totalMoney.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+            </div>
+          `;
+
+          // Add admin section if user is admin
+          if (sessionStorage.getItem('isAdmin') === 'true') {
+            moneyGrid.innerHTML += `
+              <div class="admin-section">
+                <div class="section-header">Administration Panel</div>
+                <div class="ticket-stats">
+                  <div class="stat-box">
+                    <div class="stat-label">Open Tickets</div>
+                    <div class="stat-value">0</div>
+                  </div>
+                  <div class="stat-box">
+                    <div class="stat-label">Pending Review</div>
+                    <div class="stat-value">0</div>
+                  </div>
+                  <div class="stat-box">
+                    <div class="stat-label">Resolved Today</div>
+                    <div class="stat-value">0</div>
+                  </div>
+                </div>
+                <div class="admin-actions">
+                  <a href="admin-tickets.html" class="admin-button">
+                    <i class="fa fa-ticket"></i> Manage Tickets
+                  </a>
+                  <a href="#" class="admin-button">
+                    <i class="fa fa-chart-bar"></i> View Reports
+                  </a>
+                </div>
+              </div>
+            `;
+          }
+
+          characterDiv.appendChild(moneyGrid);
+        })
+        .catch(error => {
+          console.error('Error fetching player info:', error);
+          const container = document.getElementById('characters-container');
+          container.innerHTML = '<div class="alert alert-danger">Error loading player information</div>';
         });
+
+        // Add VIP coins display if they exist
+        if (character.vipCoins) {
+          const vipCoinsDiv = document.createElement('div');
+          vipCoinsDiv.className = 'vip-coins';
+          vipCoinsDiv.innerHTML = `
+            <i class="fa fa-crown coin-icon"></i>
+            <span class="coin-value">${character.vipCoins.toLocaleString()} VIP Coins</span>
+          `;
+          document.body.appendChild(vipCoinsDiv);
+        }
+
+        // Add Diablo coins display
+        if (character.diabloCoins !== undefined) {
+          const diabloCoinsDiv = document.createElement('div');
+          diabloCoinsDiv.className = 'diablo-coins';
+          diabloCoinsDiv.innerHTML = `
+            <i class="fa fa-fire coin-icon"></i>
+            <span class="coin-value">${character.diabloCoins.toLocaleString()} Diablo Coins</span>
+          `;
+          document.body.appendChild(diabloCoinsDiv);
+        }
       });
 
       function updateNavigation() {

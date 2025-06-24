@@ -215,6 +215,7 @@
           headers: {
             'Content-Type': 'application/json'
           },
+          credentials: 'include',  
           body: JSON.stringify({ characterId, password })
         });
         
@@ -232,10 +233,8 @@
           updateLoginStatus();
           updateNavigation();
           
-          // Redirect back to previous page or home
-          const redirectTo = sessionStorage.getItem('loginRedirect') || 'index.html';
-          sessionStorage.removeItem('loginRedirect');
-          window.location.href = redirectTo;
+          // Redirect to player dashboard after successful login
+          window.location.href = 'player-dashboard.html';
         } else {
           alert(data.error || 'Login failed');
         }
