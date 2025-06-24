@@ -38,7 +38,7 @@ app.get('*.html', (req, res) => {
 // Session configuration
 const sessionConfig = {
   name: 'session',
-  secret: 'secret',
+  secret: 'your-session-secret',
   store: new MySQLStore({
     host: 'localhost',
     port: 3306,
@@ -49,7 +49,9 @@ const sessionConfig = {
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24 // 24 hours
   }
 };
 
@@ -138,11 +140,7 @@ app.post('/api/login', async (req, res) => {
     }
 
     // Store user info in session
-    req.session.user = {
-      id: user.id,
-      characterId: user.character_id,
-      isAdmin: user.is_admin === 1
-    };
+    req.session.userId = user.id;
 
     // Send back user info (excluding sensitive data)
     res.json({
@@ -169,39 +167,24 @@ const transporter = nodemailer.createTransport({
 });
 
 // Authentication middleware
-const authenticateUser = async (req, res, next) => {
-  if (!req.session || !req.session.user) {
-    return res.status(401).json({ error: 'You must be logged in to access this endpoint' });
-  }
-
-  try {
-    const [users] = await db.promise().query(
-      'SELECT * FROM users WHERE id = ?',
-      [req.session.user.id]
-    );
-
-    if (users.length === 0) {
-      return res.status(401).json({ error: 'Invalid user session' });
-    }
-
-    req.user = users[0];
+const authenticateUser = (req, res, next) => {
+  if (req.session && req.session.userId) {
     next();
-  } catch (error) {
-    console.error('Authentication error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+  } else {
+    res.status(401).json({ error: 'You must be logged in to access this endpoint' });
   }
 };
 
 // Admin authentication middleware
 const authenticateAdmin = async (req, res, next) => {
-  if (!req.session || !req.session.user) {
+  if (!req.session || !req.session.userId) {
     return res.status(401).json({ error: 'You must be logged in to access this endpoint' });
   }
 
   try {
     const [users] = await db.promise().query(
       'SELECT * FROM users WHERE id = ? AND is_admin = true',
-      [req.session.user.id]
+      [req.session.userId]
     );
 
     if (users.length === 0) {
@@ -279,14 +262,13 @@ db.connect((err) => {
       const createTicketsTable = `
         CREATE TABLE IF NOT EXISTS tickets (
           id INT AUTO_INCREMENT PRIMARY KEY,
-          user_id INT NOT NULL,
+          character_id VARCHAR(255) NOT NULL,
           subject VARCHAR(255) NOT NULL,
           category VARCHAR(50) NOT NULL,
           description TEXT NOT NULL,
           status ENUM('open', 'in_progress', 'closed') DEFAULT 'open',
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-          FOREIGN KEY (user_id) REFERENCES users(id)
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         )
       `;
       
@@ -526,35 +508,33 @@ app.get('/api/discord/status/:characterId', async (req, res) => {
 // Ticket endpoints
 app.post('/api/tickets', authenticateUser, async (req, res) => {
   try {
-    const { subject, category, description, discordId } = req.body;
+    const { characterId, subject, category, description } = req.body;
+    
+    // Verify the character belongs to the logged-in user
+    const [userCharacters] = await db.promise().query(
+      'SELECT id FROM characters WHERE user_id = ?',
+      [req.session.userId]
+    );
 
-    if (!subject || !category || !description) {
-      return res.status(400).json({ error: 'All fields are required' });
+    if (!userCharacters.some(char => char.id === parseInt(characterId))) {
+      return res.status(403).json({ error: 'Character does not belong to logged-in user' });
     }
 
-    // Insert the ticket
+    // Create the ticket
     const [result] = await db.promise().query(
-      'INSERT INTO tickets (user_id, subject, category, description) VALUES (?, ?, ?, ?)',
-      [req.session.user.id, subject, category, description]
+      'INSERT INTO tickets (character_id, subject, category, description, status, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
+      [characterId, subject, category, description, 'open']
     );
 
     // Get the created ticket
-    const [tickets] = await db.promise().query(
+    const [ticket] = await db.promise().query(
       'SELECT * FROM tickets WHERE id = ?',
       [result.insertId]
     );
 
-    if (tickets.length > 0) {
-      // Send Discord notification
-      await sendDiscordNotification('new', {
-        ticket: tickets[0],
-        user: req.session.user
-      });
-    }
-
-    res.json({ 
-      message: 'Ticket created successfully',
-      ticket: tickets[0]
+    res.json({
+      success: true,
+      ticket: ticket[0]
     });
   } catch (error) {
     console.error('Error creating ticket:', error);
@@ -567,9 +547,9 @@ app.get('/api/tickets', authenticateUser, async (req, res) => {
     const [tickets] = await db.promise().query(
       `SELECT id, subject, category, description, status, created_at, updated_at 
        FROM tickets 
-       WHERE user_id = ? 
+       WHERE character_id IN (SELECT id FROM characters WHERE user_id = ?) 
        ORDER BY created_at DESC`,
-      [req.session.user.id]
+      [req.session.userId]
     );
 
     res.json({ tickets });
@@ -590,8 +570,8 @@ app.patch('/api/tickets/:id', authenticateUser, async (req, res) => {
 
     // Update the ticket
     await db.promise().query(
-      'UPDATE tickets SET status = ? WHERE id = ? AND user_id = ?',
-      [status, id, req.session.user.id]
+      'UPDATE tickets SET status = ? WHERE id = ? AND character_id IN (SELECT id FROM characters WHERE user_id = ?)',
+      [status, id, req.session.userId]
     );
 
     // Get updated ticket
@@ -633,7 +613,7 @@ app.get('/api/admin/tickets', authenticateAdmin, async (req, res) => {
         FROM ticket_responses r
         WHERE r.ticket_id = t.id) as responses
       FROM tickets t
-      JOIN users u ON t.user_id = u.id
+      JOIN users u ON t.character_id IN (SELECT id FROM characters WHERE user_id = u.id)
       WHERE 1=1
     `;
     
@@ -684,7 +664,7 @@ app.post('/api/admin/tickets/:id/respond', authenticateAdmin, async (req, res) =
       // Add the response
       await connection.query(
         'INSERT INTO ticket_responses (ticket_id, admin_id, content) VALUES (?, ?, ?)',
-        [id, req.session.user.id, response]
+        [id, req.session.userId, response]
       );
 
       // Update ticket status if provided
@@ -697,7 +677,7 @@ app.post('/api/admin/tickets/:id/respond', authenticateAdmin, async (req, res) =
 
       // Get the ticket details
       const [tickets] = await connection.query(
-        'SELECT t.*, u.email, u.character_id FROM tickets t JOIN users u ON t.user_id = u.id WHERE t.id = ?',
+        'SELECT t.*, u.email, u.character_id FROM tickets t JOIN users u ON t.character_id IN (SELECT id FROM characters WHERE user_id = u.id) WHERE t.id = ?',
         [id]
       );
 
@@ -744,7 +724,7 @@ app.post('/api/admin/tickets/:id/respond', authenticateAdmin, async (req, res) =
 
 // Authentication check endpoint
 app.get('/api/check-auth', (req, res) => {
-  if (!req.session || !req.session.user) {
+  if (!req.session || !req.session.userId) {
     return res.json({ isAuthenticated: false });
   }
   res.json({ isAuthenticated: true });
@@ -753,7 +733,7 @@ app.get('/api/check-auth', (req, res) => {
 // Process subscription endpoint
 app.post('/api/process-subscription', async (req, res) => {
   // Check if user is authenticated
-  if (!req.session || !req.session.user) {
+  if (!req.session || !req.session.userId) {
     return res.status(401).json({ 
       success: false, 
       message: 'You must be logged in to subscribe' 
@@ -762,7 +742,7 @@ app.post('/api/process-subscription', async (req, res) => {
 
   try {
     const { subscriptionID, tier } = req.body;
-    const userId = req.session.user.id;
+    const userId = req.session.userId;
 
     // Verify subscription with PayPal
     const response = await fetch(`${PAYPAL_API}/v1/billing/subscriptions/${subscriptionID}`, {

@@ -945,23 +945,27 @@
         fetch('http://localhost:3001/api/tickets', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'credentials': 'include'
           },
           body: JSON.stringify(ticketData)
         })
-        .then(response => response.json())
-        .then(result => {
-          if (result.success) {
-            document.getElementById('ticketForm').reset();
-            loadTickets(); // Reload tickets list
-            alert('Ticket submitted successfully!');
-          } else {
-            throw new Error(result.error || 'Failed to submit ticket');
+        .then(response => {
+          if (!response.ok) {
+            return response.json().then(err => {
+              throw new Error(err.error || 'Failed to submit ticket');
+            });
           }
+          return response.json();
+        })
+        .then(result => {
+          document.getElementById('ticketForm').reset();
+          loadTickets(); // Reload tickets list
+          alert('Ticket submitted successfully!');
         })
         .catch(error => {
           console.error('Error submitting ticket:', error);
-          alert('Error submitting ticket. Please try again later.');
+          alert(error.message || 'Error submitting ticket. Please try again later.');
         });
       });
 
