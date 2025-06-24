@@ -792,17 +792,34 @@
 
     <script>
       // Discord linking functionality
-      function initializeDiscord() {
-        const discordId = sessionStorage.getItem('discordId');
-        const discordUsername = sessionStorage.getItem('discordUsername');
-        
-        if (discordId && discordUsername) {
-          document.getElementById('notLinkedMessage').style.display = 'none';
-          document.getElementById('linkedMessage').style.display = 'block';
-          document.getElementById('discordUsername').textContent = discordUsername;
-        } else {
-          document.getElementById('notLinkedMessage').style.display = 'block';
-          document.getElementById('linkedMessage').style.display = 'none';
+      async function checkDiscordStatus() {
+        const characterId = sessionStorage.getItem('characterId');
+        if (!characterId) return;
+
+        try {
+          const response = await fetch(`/api/discord/status/${characterId}`);
+          const data = await response.json();
+
+          if (data.isLinked) {
+            // Store Discord info in session
+            sessionStorage.setItem('discordId', data.discordId);
+            sessionStorage.setItem('discordUsername', data.discordUsername);
+            
+            // Update UI
+            document.getElementById('notLinkedMessage').style.display = 'none';
+            document.getElementById('linkedMessage').style.display = 'block';
+            document.getElementById('discordUsername').textContent = data.discordUsername;
+          } else {
+            // Clear any existing Discord info
+            sessionStorage.removeItem('discordId');
+            sessionStorage.removeItem('discordUsername');
+            
+            // Update UI
+            document.getElementById('notLinkedMessage').style.display = 'block';
+            document.getElementById('linkedMessage').style.display = 'none';
+          }
+        } catch (error) {
+          console.error('Error checking Discord status:', error);
         }
       }
 
@@ -818,19 +835,19 @@
         const top = (window.screen.height - height) / 2;
         
         const discordWindow = window.open(
-          `http://localhost:3001/api/discord/auth?characterId=${characterId}`,
+          `/api/discord/auth?characterId=${characterId}`,
           'Link Discord Account',
           `width=${width},height=${height},left=${left},top=${top}`
         );
 
         // Handle the OAuth2 callback
         window.addEventListener('message', function(event) {
-          if (event.origin !== 'http://localhost:3001') return;
+          if (event.origin !== window.location.origin) return;
           
           if (event.data.type === 'DISCORD_LINKED') {
             sessionStorage.setItem('discordId', event.data.discordId);
             sessionStorage.setItem('discordUsername', event.data.username);
-            initializeDiscord();
+            checkDiscordStatus();
             discordWindow.close();
           }
         });
@@ -842,7 +859,7 @@
         if (!characterId) return;
 
         if (confirm('Are you sure you want to unlink your Discord account?')) {
-          fetch('http://localhost:3001/api/discord/unlink', {
+          fetch('/api/discord/unlink', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -854,7 +871,7 @@
             if (result.success) {
               sessionStorage.removeItem('discordId');
               sessionStorage.removeItem('discordUsername');
-              initializeDiscord();
+              checkDiscordStatus();
             } else {
               throw new Error(result.error || 'Failed to unlink Discord account');
             }
@@ -866,48 +883,9 @@
         }
       });
 
-      // Update ticket form submission to include Discord notification
-      document.getElementById('ticketForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-        const characterId = sessionStorage.getItem('characterId');
-        const discordId = sessionStorage.getItem('discordId');
-        if (!characterId) return;
-
-        const ticketData = {
-          characterId: characterId,
-          subject: document.getElementById('ticketSubject').value,
-          category: document.getElementById('ticketCategory').value,
-          description: document.getElementById('ticketDescription').value,
-          discordId: discordId // Include Discord ID if available
-        };
-
-        fetch('http://localhost:3001/api/tickets', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(ticketData)
-        })
-        .then(response => response.json())
-        .then(result => {
-          if (result.success) {
-            document.getElementById('ticketForm').reset();
-            loadTickets();
-            alert('Ticket submitted successfully!' + 
-                  (discordId ? ' You will receive updates on Discord.' : ''));
-          } else {
-            throw new Error(result.error || 'Failed to submit ticket');
-          }
-        })
-        .catch(error => {
-          console.error('Error submitting ticket:', error);
-          alert('Error submitting ticket. Please try again later.');
-        });
-      });
-
       // Initialize Discord status when page loads
       document.addEventListener('DOMContentLoaded', function() {
-        initializeDiscord();
+        checkDiscordStatus();
       });
     </script>
 

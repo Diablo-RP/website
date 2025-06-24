@@ -456,6 +456,33 @@ app.post('/api/discord/unlink', async (req, res) => {
   }
 });
 
+// Add this endpoint to check Discord link status
+app.get('/api/discord/status/:characterId', async (req, res) => {
+  const { characterId } = req.params;
+  
+  try {
+    const [rows] = await db.promise().query(
+      'SELECT discord_id, discord_username FROM discord_links WHERE character_id = ?',
+      [characterId]
+    );
+
+    if (rows.length > 0) {
+      res.json({
+        isLinked: true,
+        discordUsername: rows[0].discord_username,
+        discordId: rows[0].discord_id
+      });
+    } else {
+      res.json({
+        isLinked: false
+      });
+    }
+  } catch (error) {
+    console.error('Error checking Discord status:', error);
+    res.status(500).json({ error: 'Failed to check Discord status' });
+  }
+});
+
 // Ticket endpoints
 app.post('/api/tickets', authenticateUser, async (req, res) => {
   try {
