@@ -65,9 +65,24 @@ if (process.env.DISCORD_BOT_TOKEN) {
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.DirectMessages
-      ] 
+        GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.GuildMessageReactions,
+        GatewayIntentBits.DirectMessageReactions,
+        GatewayIntentBits.GuildPresences
+      ],
+      partials: [
+        Partials.Channel,
+        Partials.Message,
+        Partials.User,
+        Partials.GuildMember,
+        Partials.Reaction,
+        Partials.ThreadMember
+      ]
     });
+
+    // Add debug event handlers
+    discord.on('debug', console.log);
+    discord.on('warn', console.log);
 
     discord.login(process.env.DISCORD_BOT_TOKEN)
       .then(() => {
@@ -86,6 +101,12 @@ if (process.env.DISCORD_BOT_TOKEN) {
     // Add ready event handler
     discord.on('ready', () => {
       console.log(`Logged in as ${discord.user.tag}!`);
+      console.log('Connected to servers:', discord.guilds.cache.map(g => g.name).join(', '));
+    });
+
+    // Handle direct message errors
+    discord.on('error', error => {
+      console.error('Discord bot error:', error);
     });
 
   } catch (error) {
