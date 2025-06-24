@@ -7,7 +7,12 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 require('dotenv').config();
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
-const { Client, GatewayIntentBits } = require('discord.js');
+const { 
+  Client, 
+  GatewayIntentBits, 
+  ActivityType, 
+  Partials 
+} = require('discord.js');
 
 // PayPal configuration
 const PAYPAL_CLIENT_ID = 'AZLUOzUrxbmSfcgkUnygNj1R2VLv7h09GlS-GW-0aESQNcxald90D58h4j25bUP_NLDUkCVGJ_cLuoV1';
@@ -18,7 +23,7 @@ const PAYPAL_API = 'https://api-m.paypal.com';
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
-const DISCORD_REDIRECT_URI = 'http://localhost:3001/api/discord/callback';
+const DISCORD_REDIRECT_URI = `${process.env.WEBSITE_URL}/api/discord/callback`;
 
 const app = express();
 app.use(cors());
@@ -69,7 +74,7 @@ if (process.env.DISCORD_BOT_TOKEN) {
         console.log('Discord bot connected successfully');
         // Set bot status
         discord.user.setPresence({
-          activities: [{ name: 'Support Tickets', type: 'WATCHING' }],
+          activities: [{ name: 'Support Tickets', type: ActivityType.Watching }],
           status: 'online'
         });
       })
